@@ -1,0 +1,99 @@
+{
+  "users": [],
+  "customers": [],
+  "products": [
+    {
+      "id": "prod_poscode",
+      "name": "POSCODE",
+      "code": "POS",
+      "description": "Savdo va chakana biznesni avtomatlashtirish tizimi",
+      "modules": [
+        {
+          "id": "mod_pos_kassa",
+          "name": "Kassa va Savdo"
+        },
+        {
+          "id": "mod_pos_ombor",
+          "name": "Ombor va Qoldiqlar"
+        },
+        {
+          "id": "mod_pos_hisobot",
+          "name": "Moliya va Hisobot"
+        },
+        {
+          "id": "mod_pos_fiskal",
+          "name": "Fiskalizatsiya (OFD/Solik)"
+        },
+        {
+          "id": "mod_pos_pay",
+          "name": "To'lov tizimlari (Payme/Click/Uzum/Terminal)"
+        },
+        {
+          "id": "mod_pos_mark",
+          "name": "Markirovka (Asl Belgisi)"
+        }
+      ]
+    },
+    {
+      "id": "prod_restoplus",
+      "name": "RESTOPLUS",
+      "code": "RST",
+      "description": "Restoran, kafe va ovqatlanish shahobchalari tizimi",
+      "modules": [
+        {
+          "id": "mod_rst_kds",
+          "name": "Oshxona ekrani (KDS)"
+        },
+        {
+          "id": "mod_rst_waiter",
+          "name": "Ofitsiant mobil ilovasi"
+        },
+        {
+          "id": "mod_rst_kassa",
+          "name": "Kassa va Chek chop etish"
+        },
+        {
+          "id": "mod_rst_qr",
+          "name": "QR-menyu va Buyurtmalar"
+        }
+      ]
+    },
+    {
+      "id": "prod_mizaan",
+      "name": "MIZAAN",
+      "code": "MIZ",
+      "description": "Ishlab chiqarish va xomashyo hisobi tizimi",
+      "modules": [
+        {
+          "id": "mod_miz_prod",
+          "name": "Ishlab chiqarish rejalashtirish"
+        },
+        {
+          "id": "mod_miz_cost",
+          "name": "Tannarx kalkulyatsiyasi"
+        },
+        {
+          "id": "mod_miz_raw",
+          "name": "Xomashyo ombori"
+        },
+        {
+          "id": "mod_miz_qc",
+          "name": "Sifat nazorati (QC)"
+        }
+      ]
+    }
+  ],
+  "issues": [],
+  "reminderLogs": [],
+  "telegramRecipients": [
+    {
+      "id": "recip_admin_main",
+      "name": "Shohrux (Bosh Admin)",
+      "role": "Bosh Administrator",
+      "chatId": "53663779",
+      "username": "shohrux_admin",
+      "isActive": true,
+      "createdAt": "2026-11-17T09:00:00Z"
+    }
+  ]
+}

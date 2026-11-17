@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Light mode engineering grid background */
+html:not(.dark) body, 
+html:not(.dark) #root,
+html:not(.dark) .tech-canvas {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+  background-image: radial-gradient(circle at 1px 1px, #CBD5E1 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Dark mode engineering grid background */
+html.dark body, 
+html.dark #root,
+html.dark .tech-canvas {
+  background-color: #0A0F1D !important;
+  color: #F8FAFC !important;
+  background-image: radial-gradient(circle at 1px 1px, #1E293B 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #0F172A;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}

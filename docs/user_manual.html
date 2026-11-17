@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>TASK CONTROL — Foydalanuvchi Qo‘llanmasi</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --primary: #0f172a;
+      --primary-light: #1e293b;
+      --accent: #0284c7;
+      --accent-soft: #f0f9ff;
+      --accent-border: #bae6fd;
+      --success: #059669;
+      --success-soft: #f0fdf4;
+      --success-border: #bbf7d0;
+      --warning: #d97706;
+      --warning-soft: #fffbeb;
+      --warning-border: #fef3c7;
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --danger-border: #fecaca;
+      --border: #e2e8f0;
+      --bg-card: #f8fafc;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text-main);
+      background: #ffffff;
+      line-height: 1.55;
+      font-size: 12.5px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm 12mm 14mm;
+    }
+
+    .page-section {
+      break-before: page;
+      position: relative;
+      min-height: 260mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .page-section:first-child {
+      break-before: avoid;
+    }
+
+    .page-content {
+      flex: 1;
+    }
+
+    /* Cover Page */
+    .cover-container {
+      min-height: 265mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 36px 30px;
+      background: linear-gradient(135deg, #090d16 0%, #111827 50%, #1e293b 100%);
+      color: #ffffff;
+      border-radius: 14px;
+    }
+
+    .cover-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      padding-bottom: 16px;
+    }
+
+    .cover-badge {
+      display: inline-block;
+      padding: 5px 14px;
+      background: rgba(2, 132, 199, 0.25);
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .cover-title-box {
+      margin-top: 25px;
+      margin-bottom: 25px;
+    }
+
+    .cover-title {
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+      background: linear-gradient(120deg, #ffffff 0%, #93c5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .cover-subtitle {
+      font-size: 15.5px;
+      color: #cbd5e1;
+      font-weight: 400;
+      max-width: 600px;
+      line-height: 1.5;
+    }
+
+    .cover-features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 26px;
+    }
+
+    .cover-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 14px 16px;
+      border-radius: 10px;
+    }
+
+    .cover-card h4 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 4px;
+    }
+
+    .cover-card p {
+      font-size: 11.5px;
+      color: #94a3b8;
+      line-height: 1.45;
+    }
+
+    .cover-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* Headings */
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-light);
+      margin-top: 14px;
+      margin-bottom: 8px;
+    }
+
+    h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    p {
+      margin-bottom: 8px;
+      text-align: justify;
+    }
+
+    /* TOC */
+    .toc-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px dotted var(--border);
+      font-size: 12.5px;
+    }
+
+    .toc-title {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .toc-page {
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin: 10px 0;
+      font-size: 12px;
+      border-left: 4px solid;
+    }
+
+    .callout-important {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #0369a1;
+    }
+
+    .callout-warning {
+      background: var(--warning-soft);
+      border-color: var(--warning);
+      color: #b45309;
+    }
+
+    .callout-success {
+      background: var(--success-soft);
+      border-color: var(--success);
+      color: #047857;
+    }
+
+    .callout-danger {
+      background: var(--danger-soft);
+      border-color: var(--danger);
+      color: #b91c1c;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 11.5px;
+    }
+
+    th, td {
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .badge-primary { background: #e0f2fe; color: #0369a1; }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-purple { background: #f3e8ff; color: #7e22ce; }
+
+    /* Steps list */
+    .step-list {
+      margin: 10px 0;
+      list-style: none;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: flex-start;
+    }
+
+    .step-number {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-title {
+      font-weight: 700;
+      font-size: 12.5px;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+
+    /* Workflow Visual */
+    .workflow-container {
+      display: flex;
+      justify-content: space-between;
+      margin: 12px 0;
+      gap: 8px;
+    }
+
+    .workflow-box {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    .workflow-box.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .workflow-box h5 {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 3px;
+    }
+
+    .workflow-box p {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-bottom: 0;
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    .code-block {
+      background: #1e293b;
+      color: #f8fafc;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      margin: 8px 0;
+      line-height: 1.45;
+    }
+
+    .page-footer {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      padding-top: 5px;
+      margin-top: 10px;
+      font-size: 9.5px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== 1. COVER PAGE ==================== -->
+  <div class="page-section">
+    <div class="cover-container">
+      <div class="cover-header">
+        <span class="cover-badge">Rasmiy Qo‘llanma • Enterprise Edition</span>
+        <span style="font-size: 12px; font-weight: 600; color: #94a3b8;">Versiya 2.0 • 2026-yil</span>
+      </div>
+
+      <div class="cover-title-box">
+        <div class="cover-title">TASK CONTROL</div>
+        <div class="cover-subtitle">
+          Xodimlarni boshqarish, mijoz murojaatlarini 4 bosqichli qat’iy nazorat qilish va avtomatlashtirilgan KPI hisoblash tizimi bo‘yicha to‘liq foydalanuvchi qo‘llanmasi.
+        </div>
+
+        <div class="cover-features-grid">
+          <div class="cover-card">
+            <h4>🔒 4 Bosqichli Nazorat Qoidasi</h4>
+            <p>Dasturchi bajargani bilan masala yopilmaydi. Faqat mijoz tasdig‘i orqali yakunlanadi.</p>
+          </div>
+          <div class="cover-card">
+            <h4>👤 Operator Lock Xavfsizligi</h4>
+            <p>Murojaatni faqat uni ochgan operator yoki Superadmin yopish huquqiga ega.</p>
+          </div>
+          <div class="cover-card">
+            <h4>📊 Shaffof KPI & SLA</h4>
+            <p>O‘z vaqtida yechish, qaytarilish koeffitsienti va mijoz qoniqishiga asoslangan reyting.</p>
+          </div>
+          <div class="cover-card">
+            <h4>🤖 Telegram Bot Eskalatsiyasi</h4>
+            <p>Muddati o‘tgan masalalar avtomatik ravishda mutaxassis va rahbariyatga eslatiladi.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="cover-footer">
+        <span>© 2026 TASK CONTROL Enterprise Edition</span>
+        <span>Windows Desktop (Tauri 2) + Cloud API + Telegram Bot</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. KIRISH VA MUNDARIJA ==================== -->
+  <div class="page-section">
+    <div class="page-content">
+      <h1>1. Kirish va Mundarija</h1>
+
+      <p>
+        <strong>TASK CONTROL</strong> — IT kompaniyalar, texnik qo‘llab-quvvatlash markazlari va dasturiy ta’minot ishlab chiquvchi jamoalar uchun maxsus ishlab chiqilgan professional boshqaruv tizimidir. Tizim mijozlar ehtiyojlarini o‘z vaqtida qondirish, xodimlarning mehnat intizomini mustahkamlash va har bir topshiriqning to‘liq natijaga erishishini ta’minlaydi.
+      </p>
+
+      <h2>Hujjat Mundarijasi</h2>
+      <div style="margin: 10px 0;">
+        <div class="toc-item">
+          <span class="toc-title">1. Kirish va Tizimning Asosiy Arxitekturasi</span>
+          <span class="toc-page">2-sahifa</span>
+        </div>
+        <div class="toc-item">
+          <span class="toc-title">2. Asosiy Biznes Qoidasi: 4 Bosqichli Nazorat va Operator Lock</span>
+          <span class="toc-page">3-sahifa</span>
+        </div>
+        <div class="toc-item">
+          <span class="toc-title">3. Tizim Rollari va Ruxsatlar Matritsasi (RBAC)</span>
+          <span class="toc-page">4-sahifa</span>
+        </div>
+        <div class="toc-item">
+          <span class="toc-title">4. Operator Qo‘llanmasi: Murojaat ochish, yo‘naltirish va yopish</span>
+          <span class="toc-page">5-sahifa</span>
+        </div>
+        <div class="toc-item">
+          <span class="toc-title">5. Mutaxassis (Dasturchi) Qo‘llanmasi: Ijro va yechim topshirish</span>
+          <span class="toc-page">6-sahifa</span>
+        </div>
+        <div class="toc-item">
+          <span class="toc-title">6. Menejer va Superadmin: Xodimlar va tizim boshqaruvi</span>
+          <span class="toc-page">7-sahifa</span>
+        </div>
+        <div class="toc-item">
+          <span class="toc-title">7. KPI Tahlili va Xodimlarni Baholash Metodikasi</span>
+          <span class="toc-page">8-sahifa</span>
+        </div>
+        <div class="toc-item">
+          <span class="toc-title">8. Telegram Bot Integratsiyasi va Eskalatsiyalar</span>
+          <span class="toc-page">9-sahifa</span>
+        </div>
+        <div class="toc-item">
+          <span class="toc-title">9. Tez-tez So‘raladigan Savollar (FAQ) va Qo‘llab-quvvatlash</span>
+          <span class="toc-page">10-sahifa</span>
+        </div>
+      </div>
+
+      <h2>Tizim Arxitekturasi va Modullari</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 25%;">Komponent</th>
+            <th style="width: 25%;">Texnologiya</th>
+            <th style="width: 50%;">Vazifasi va Xususiyati</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Desktop Ilova</strong></td>
+            <td>Tauri 2 + React + TS</td>
+            <td>Tezkor native Windows dasturi (.exe / .msi), minimal resurs sarfi va zamonaviy UI.</td>
+          </tr>
+          <tr>
+            <td><strong>Cloud Backend</strong></td>
+            <td>Node.js + NestJS/Express</td>
+            <td>Markaziy biznes mantiq, RBAC xavfsizlik nazorati, audit loglari va REST API.</td>
+          </tr>
+          <tr>
+            <td><strong>Ma’lumotlar bazasi</strong></td>
+            <td>PostgreSQL + Prisma</td>
+            <td>Murojaat tarixi, xodimlar profili va audit ma’lumotlarining xavfsiz saqlanishi.</td>
+          </tr>
+          <tr>
+            <td><strong>Telegram Bot Servisi</strong></td>
+            <td>Telegram Bot API</td>
+            <td>Xodimlarga shaxsiy eslatmalar, muddati o‘tgan masalalar bo‘yicha tezkor ogohlantirish.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-important">
+        <div class="callout-title">💡 Server va Eslatmalar Ishlash Qoidasi</div>
+        Foydalanuvchi kompyuterini o‘chirib qo‘ygan holatda ham, bulutli server uzluksiz ishlaydi va Telegram orqali barcha belgilangan eslatmalarni o‘z vaqtida mas’ul mutaxassis va operatorlarga yuborishda davom etadi.
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>TASK CONTROL 2.0 • Foydalanuvchi Qo‘llanmasi</span>
+      <span>2-sahifa</span>
+    </div>
+  </div>
+
+  <!-- ==================== 3. ASOSIY BIZNES QOIDASI ==================== -->
+  <div class="page-section">
+    <div class="page-content">
+      <h1>2. Asosiy Biznes Qoidasi: 4 Bosqichli Nazorat</h1>
+
+      <div class="callout callout-danger">
+        <div class="callout-title">🚨 BOSH BIZNES QOIDASI</div>
+        <strong>Mutaxassis (dasturchi) vazifani bajargani bilan murojaat yopilmaydi!</strong><br>
+        Mijoz yechimni qabul qilib, muammo to‘liq hal bo‘lganini tasdiqlamaguncha tizimda masala «Yechim yetkazildi» yoki «Jarayonda» maqomida qoladi va nazoratdan tushmaydi.
+      </div>
+
+      <h2>4 Bosqichli Nazorat Sxemasi (Lifecycle)</h2>
+      <div class="workflow-container">
+        <div class="workflow-box active">
+          <h5>1. Qabul qilindi</h5>
+          <p>Operator muammoni rasmiylashtiradi va mutaxassisga yo‘naltiradi.</p>
+        </div>
+        <div class="workflow-box">
+          <h5>2. Yechim berildi</h5>
+          <p>Mutaxassis kod yoki sozlamani bajarib, hisobotni operatorga beradi.</p>
+        </div>
+        <div class="workflow-box">
+          <h5>3. Mijozga yetkazildi</h5>
+          <p>Operator yechimni mijoz bazasida sinab ko‘rishni taqdim etadi.</p>
+        </div>
+        <div class="workflow-box">
+          <h5>4. Mijoz tasdiqladi</h5>
+          <p>Mijoz rozilik bergach, murojaat rasman yopiladi va KPI ga yoziladi.</p>
+        </div>
+      </div>
+
+      <h2>«Operator Lock» — Biriktirilgan Operator Qoidasi</h2>
+      <p>
+        Tizimda mas’uliyat aniq bo‘lishi uchun <strong>Operator Lock</strong> tamoyili joriy etilgan:
+      </p>
+      <ul style="padding-left: 18px; margin-bottom: 10px;">
+        <li>Murojaatni qabul qilib ochgan operator <code>responsibleOperatorId</code> sifatida qayd etiladi.</li>
+        <li>Mutaxassis vazifani bajarganidan so‘ng, tizim murojaatni <strong>aynan o‘sha qabul qilgan operatorga</strong> qaytaradi.</li>
+        <li>Boshqa operatorlar bu murojaatni yopish yoki mijozga yetkazish vakolatiga ega emas (faqat Superadmin yoki Menejer alohida zarurat tug‘ilganda operatorni almashtirishi mumkin).</li>
+        <li>Agar mijoz yechimdan norozi bo‘lsa, operator uni <strong>«Qaytarildi» (Rejected)</strong> maqomi bilan mutaxassisga qayta yo‘naltiradi. Bu ko‘rsatkich mutaxassisning KPI reytingiga to‘g‘ridan-to‘g‘ri ta’sir qiladi.</li>
+      </ul>
+
+      <h2>Murojaat Maqomlari (Statuses)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Holat</th>
+            <th>Kodi</th>
+            <th>Mas’ul</th>
+            <th>Tavsifi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-primary">Yangi</span></td>
+            <td><code>NEW</code></td>
+            <td>Operator</td>
+            <td>Murojaat ro‘yxatga olindi, mutaxassis tayinlanishi kutilmoqda.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-warning">Biriktirildi</span></td>
+            <td><code>ASSIGNED</code></td>
+            <td>Mutaxassis</td>
+            <td>Mas’ul tayinlangan, xodimga Telegram xabari yetkazilgan.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-primary">Jarayonda</span></td>
+            <td><code>IN_PROGRESS</code></td>
+            <td>Mutaxassis</td>
+            <td>Mutaxassis muammo ustida amaliy ish olib bormoqda.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-purple">Yechim berildi</span></td>
+            <td><code>RESOLVED</code></td>
+            <td>Operator</td>
+            <td>Mutaxassis topshirdi, operator tomonidan tekshirish kutilmoqda.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-warning">Mijozga yetkazildi</span></td>
+            <td><code>DELIVERED</code></td>
+            <td>Operator</td>
+            <td>Operator mijozga taqdim etdi, yakuniy tasdiq kutilmoqda.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-danger">Qaytarildi</span></td>
+            <td><code>REJECTED</code></td>
+            <td>Mutaxassis</td>
+            <td>Mijoz yoki operator e’tiroz bildirdi, qayta ishlash zarur.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-success">Yopildi</span></td>
+            <td><code>CLOSED</code></td>
+            <td>Operator</td>
+            <td>Mijoz tasdiqladi, murojaat to‘liq muvaffaqiyatli yakunlandi.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="page-footer">
+      <span>TASK CONTROL 2.0 • Foydalanuvchi Qo‘llanmasi</span>
+      <span>3-sahifa</span>
+    </div>
+  </div>
+
+  <!-- ==================== 4. ROLLARI VA RBAC ==================== -->
+  <div class="page-section">
+    <div class="page-content">
+      <h1>3. Foydalanuvchi Rollari va Ruxsatlar Matritsasi</h1>
+
+      <p>
+        TASK CONTROL tizimida qat’iy <strong>Role-Based Access Control (RBAC)</strong> amal qiladi. Har bir foydalanuvchi faqat o‘z xizmat vazifasiga mos ruxsatlar doirasida ish olib boradi.
+      </p>
+
+      <h2>Rollar Xususiyati</h2>
+      <div style="margin-bottom: 10px;">
+        <h3 style="color: #b91c1c;">1. Superadmin (Tizim Rahbari)</h3>
+        <p>Barcha bo‘limlarni boshqarish huquqiga ega. Xodimlarni qo‘shish, tahrirlash, o‘chirish, barcha murojaatlarni ko‘rish va qayta taqsimlash, Telegram integratsiyasini boshqarish va to‘liq KPI hisobotlarini olish huquqiga ega.</p>
+
+        <h3 style="color: #0369a1;">2. Menejer (Loyiha / Bo‘lim Rahbari)</h3>
+        <p>Murojaatlar oqimini umumiy nazorat qiladi. Mas’ullarni qayta biriktirish, muddati o‘tgan masalalarni monitoring qilish va tahliliy hisobotlarni ko‘rish vakolatiga ega.</p>
+
+        <h3 style="color: #047857;">3. Operator (Support / Mijozlar bilan aloqa)</h3>
+        <p>Mijozlardan murojaatlarni qabul qiladi, kartochka ochadi, mutaxassislarga yo‘naltiradi. Yechim tayyor bo‘lganda mijoz bilan bog‘lanib tasdiq oladi va murojaatni yakuniy yopadi.</p>
+
+        <h3 style="color: #7e22ce;">4. Mutaxassis (Dasturchi / Texnik muhandis)</h3>
+        <p>O‘ziga biriktirilgan texnik masalalarni yechadi, kod yozadi, serverlarni sozlaydi. Natijani commit va izoh bilan operatorga topshiradi. <em>Murojaatni mustaqil yopish huquqi berilmaydi.</em></p>
+      </div>
+
+      <h2>Ruxsatlar Matritsasi (RBAC Table)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Amallar va Imkoniyatlar</th>
+            <th style="text-align:center;">Superadmin</th>
+            <th style="text-align:center;">Menejer</th>
+            <th style="text-align:center;">Operator</th>
+            <th style="text-align:center;">Mutaxassis</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Yangi murojaat yaratish</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">❌</td>
+          </tr>
+          <tr>
+            <td>Murojaatni mutaxassisga biriktirish</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅ (O‘z murojaati)</td>
+            <td style="text-align:center;">❌</td>
+          </tr>
+          <tr>
+            <td>Vazifani qabul qilish & Yechim topshirish</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">❌</td>
+            <td style="text-align:center;">❌</td>
+            <td style="text-align:center;">✅</td>
+          </tr>
+          <tr>
+            <td>Yechimni mijozga yetkazilgan deb belgilash</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅ (O‘z murojaati)</td>
+            <td style="text-align:center;">❌</td>
+          </tr>
+          <tr>
+            <td>Murojaatni rasman yopish (Tasdiq asosida)</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅ (O‘z murojaati)</td>
+            <td style="text-align:center;">❌</td>
+          </tr>
+          <tr>
+            <td>Murojaatni mutaxassisga qaytarish (Rejection)</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">❌</td>
+          </tr>
+          <tr>
+            <td>Xodimlarni boshqarish (Qo‘shish/Tahrirlash/O‘chirish)</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">Faqat ko‘rish</td>
+            <td style="text-align:center;">❌</td>
+            <td style="text-align:center;">❌</td>
+          </tr>
+          <tr>
+            <td>Barcha xodimlarning KPI hisobotlari</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">✅</td>
+            <td style="text-align:center;">Faqat o‘ziki</td>
+            <td style="text-align:center;">Faqat o‘ziki</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="page-footer">
+      <span>TASK CONTROL 2.0 • Foydalanuvchi Qo‘llanmasi</span>
+      <span>4-sahifa</span>
+    </div>
+  </div>
+
+  <!-- ==================== 5. OPERATOR QO'LLANMASI ==================== -->
+  <div class="page-section">
+    <div class="page-content">
+      <h1>4. Operator Bo‘yicha Amaliy Qo‘llanma</h1>
+
+      <p>
+        Operator — mijoz va ishlab chiquvchilar o‘rtasidagi asosiy muvofiqlashtiruvchidir. Tizimda murojaatning ochilishidan to yakuniy yopilishigacha bo‘lgan barcha bosqichlarni operator nazorat qiladi.
+      </p>
+
+      <h2>Qadam-baqadam Ish Jarayoni</h2>
+
+      <ul class="step-list">
+        <li class="step-item">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">Mijoz qo‘ng‘irog‘i / xabarini qabul qilish va tekshirish</div>
+            <p>Dasturda <strong>«Mijozlar»</strong> bo‘limiga kiring. Agar mijoz tizimda mavjud bo‘lsa, uni tanlang. Agar yangi mijoz bo‘lsa, «Yangi mijoz» tugmasi orqali uning nomi, telefon raqami va dasturiy ta’minot versiyasini kiriting.</p>
+          </div>
+        </li>
+
+        <li class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">Yangi murojaat kartochkasini ochish</div>
+            <p><strong>«Murojaatlar»</strong> bo‘limida <strong>«+ Yangi murojaat»</strong> tugmasini bosing. Mavzu, batafsil tavsif, dastur moduli va ustuvorlik darajasini (Past, O‘rta, Yuqori, Shoshilinch/Kritik) belgilang. Agar mijoz skrinshot yuborgan bo‘lsa, faylni biriktiring.</p>
+          </div>
+        </li>
+
+        <li class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">Mutaxassisni biriktirish</div>
+            <p>Mavjud faol mutaxassislar ro‘yxatidan mos dasturchini tanlang va <strong>«Biriktirish»</strong> tugmasini bosing. Shu zahoti dasturchining Telegram hisobiga yangi vazifa haqida xabarnoma boradi.</p>
+          </div>
+        </li>
+
+        <li class="step-item">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <div class="step-title">Yechimni qabul qilish va mijozga yetkazish</div>
+            <p>Dasturchi yechimni topshirgach (maqom: «Yechim berildi»), murojaat yana operator stoliga qaytadi. Operator yechim izohi va fayllarni tekshiradi, mijozga yangilanishni taqdim etadi va maqomni <strong>«Mijozga yetkazildi»</strong> ga o‘tkazadi.</p>
+          </div>
+        </li>
+
+        <li class="step-item">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <div class="step-title">Mijoz tasdig‘i va Murojaatni yopish (yoki Qaytarish)</div>
+            <p>Mijoz bilan bog‘laniladi:
+              <br>• <strong>Mijoz rozi bo‘lsa:</strong> «Mijoz tasdiqladi va Yopish» tugmasi bosiladi. Murojaat muvaffaqiyatli arxivlanadi.
+              <br>• <strong>Muammo davom etsa:</strong> «Mutaxassisga qaytarish» tugmasi bosiladi va mijoz e’tirozi yoziladi. Murojaat qayta ishlashga yo‘naltiriladi.
+            </p>
+          </div>
+        </li>
+      </ul>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">⚠️ E’tibor bering: Eslatmalar nazorati</div>
+        Agar siz yechim yetkazilganidan so‘ng mijoz bilan 24 soat ichida bog‘lanmasangiz yoki murojaatni ochiq qoldirsangiz, tizim Telegram orqali har 2 soatda sizga eslatma yuboradi.
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>TASK CONTROL 2.0 • Foydalanuvchi Qo‘llanmasi</span>
+      <span>5-sahifa</span>
+    </div>
+  </div>
+
+  <!-- ==================== 6. MUTAXASSIS QO'LLANMASI ==================== -->
+  <div class="page-section">
+    <div class="page-content">
+      <h1>5. Mutaxassis (Dasturchi) Bo‘yicha Qo‘llanma</h1>
+
+      <p>
+        Mutaxassis — dasturiy xatoliklarni bartaraf etuvchi va texnik yangilanishlarni tayyorlovchi asosiy ijrochidir.
+      </p>
+
+      <h2>Vazifani Bajarish Algoritmi</h2>
+
+      <ul class="step-list">
+        <li class="step-item">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">Telegram xabarnomasi va tizimga kirish</div>
+            <p>Operator sizga vazifa biriktirganida Telegram botingizga murojaat raqami, mijoz nomi va ustuvorligi keladi. TASK CONTROL dasturiga kirib, o‘zingizning <strong>«Mening vazifalarim»</strong> ro‘yxatini ochasiz.</p>
+          </div>
+        </li>
+
+        <li class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">Vazifani qabul qilish («Jarayonda»)</div>
+            <p>Murojaat ichiga kirib, <strong>«Ishni boshlash»</strong> tugmasini bosing. Bu orqali reaksiya vaqti hisoblash to‘xtatiladi va sof ijro vaqti hisoblana boshlaydi. Operator va menejer sizning ish boshlaganingizni ko‘radi.</p>
+          </div>
+        </li>
+
+        <li class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">Kutish rejimiga olish (Zarur bo‘lsa)</div>
+            <p>Agar mijoz tomonidan qo‘shimcha ma’lumot, fayl yoki serverga ruxsat zarur bo‘lsa, <strong>«Kutish rejimiga olish»</strong> tugmasini bosing va sababini yozing. Bu vaqtda sizning ijro vaqtingiz to‘xtatib turiladi (KPI buzilmaydi).</p>
+          </div>
+        </li>
+
+        <li class="step-item">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <div class="step-title">Yechimni taqdim etish va Operatorga topshirish</div>
+            <p>Muammo hal bo‘lgach, <strong>«Yechimni topshirish»</strong> tugmasi bosiladi va quyidagilar kiritiladi:
+              <br>• Bajarilgan ish bo‘yicha batafsil hisobot izohi;
+              <br>• Git commit havolasi yoki reliz/build versiyasi raqami (masalan: <code>v2.4.1 - commit: 7f8a9b</code>);
+              <br>• Fayllar yoki test skrinshotlari (zarur bo‘lsa).
+            </p>
+          </div>
+        </li>
+      </ul>
+
+      <div class="callout callout-important">
+        <div class="callout-title">🔒 Nega mutaxassis murojaatni mustaqil yopa olmaydi?</div>
+        Dasturchi nazdida to‘g‘ri ishlagan yechim mijozning real ma’lumotlar bazasida kutilgan natijani bermasligi mumkin. Shuning uchun yakuniy qabul qilish vakolati faqat mijoz va operatorga berilgan.
+      </div>
+
+      <h2>Qaytarilgan Vazifalar (Rejected Issues) bilan ishlash</h2>
+      <p>
+        Agar operator murojaatni «Qaytarildi» qilib qaytarsa, ro‘yxatda ushbu masala qizil rang bilan belgilanadi. Operator yozgan e’tirozni diqqat bilan o‘qib, kamchilikni bartaraf eting va yana qaytadan «Yechimni topshirish» tugmasi orqali topshiring. Har bir asossiz qaytarilish mutaxassisning oylik sifat ko‘rsatkichiga ta’sir qiladi.
+      </p>
+    </div>
+    <div class="page-footer">
+      <span>TASK CONTROL 2.0 • Foydalanuvchi Qo‘llanmasi</span>
+      <span>6-sahifa</span>
+    </div>
+  </div>
+
+  <!-- ==================== 7. MENEJER VA SUPERADMIN ==================== -->
+  <div class="page-section">
+    <div class="page-content">
+      <h1>6. Menejer va Superadmin Qo‘llanmasi</h1>
+
+      <p>
+        Ushbu bo‘lim tizim ma’murlari va bo‘lim rahbarlari uchun mo‘ljallangan bo‘lib, xodimlarni boshqarish, rollar berish va tizim parametrlarini nazorat qilishni qamrab oladi.
+      </p>
+
+      <h2>Xodimlarni Boshqarish («Xodimlar» menyusi)</h2>
+      <p>
+        Superadmin tizimda xodimlarning ro‘yxatini ko‘rishi, yangi xodim qo‘shishi, mavjudlarini tahrirlashi yoki o‘chirishi mumkin.
+      </p>
+
+      <h3>1. Yangi xodim qo‘shish:</h3>
+      <ul style="padding-left: 18px; margin-bottom: 8px;">
+        <li><strong>«+ Yangi xodim»</strong> tugmasini bosing.</li>
+        <li>F.I.O, telefon raqami (takrorlanmas bo‘lishi shart), roli (Operator, Mutaxassis, Menejer, Superadmin) va dastlabki parolini kiriting.</li>
+        <li>Xodimning Telegram username yoki Telegram Chat ID sini kiriting va saqlash tugmasini bosing.</li>
+      </ul>
+
+      <h3>2. Xodimni tahrirlash va o‘chirish:</h3>
+      <ul style="padding-left: 18px; margin-bottom: 10px;">
+        <li>Har bir xodim qatoridagi <strong>✏️ (Tahrirlash)</strong> tugmasi orqali uning telefon raqami, roli, Telegram ma’lumotlari yoki holatini (Faol / Nofaol) istalgan paytda o‘zgartirish mumkin.</li>
+        <li><strong>🗑️ (O‘chirish)</strong> tugmasi bosilganda tasdiqlash so‘raladi va xodim ma’lumotlar bazasidan tozalanadi.</li>
+      </ul>
+
+      <h2>Telegram Hisobini Xodim Profiliga Bog‘lash Mexanizmi</h2>
+      <p>
+        Telegram bot xodimga shaxsiy bildirishnoma yuborishi uchun xodim o‘z Telegram akkauntini tizim bilan bog‘lashi kerak:
+      </p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">Bog‘lanish kodini olish</div>
+            <p>Xodim yaratilgach, unga 8 xonali maxsus havola yoki start parametri beriladi (masalan: <code>/start link_x7d9f2</code>).</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">Botga kirish va start bosish</div>
+            <p>Xodim korporativ botga (<code>@task_control_bot</code>) kirib <strong>Start</strong> tugmasini bosadi.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">Avtomatik Chat ID saqlanishi</div>
+            <p>Bot xodimning Telegram <code>chat_id</code> sini qabul qilib, uning profiliga avtomatik yozadi va shaxsiy xabarnomalar faollashadi.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-success">
+        <div class="callout-title">✅ Muhim xavfsizlik qoidasi</div>
+        Foydalanuvchi bot bilan kamida 1 marta muloqot boshlamasa, Telegram siyosatiga ko‘ra bot unga birinchi bo‘lib xabar yoza olmaydi. Shuning uchun barcha yangi xodimlar darhol botda <code>/start</code> buyrug‘ini bajarishi shart.
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>TASK CONTROL 2.0 • Foydalanuvchi Qo‘llanmasi</span>
+      <span>7-sahifa</span>
+    </div>
+  </div>
+
+  <!-- ==================== 8. KPI TAHLILI VA BAHOLASH ==================== -->
+  <div class="page-section">
+    <div class="page-content">
+      <h1>7. KPI Tahlili va Ish Samaradorligini Baholash</h1>
+
+      <p>
+        TASK CONTROL tizimida xodimlarning mehnat samaradorligini xolis baholash uchun maxsus avtomatlashtirilgan KPI mexanizmi joriy etilgan. Barcha ballar real vaqt rejimida tizim tomonidan hisoblab boriladi.
+      </p>
+
+      <h2>1. Mutaxassislar (Dasturchilar) uchun KPI Formulalari</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Ko‘rsatkich</th>
+            <th style="text-align:center;">Vazni</th>
+            <th>Baholash Mezonlari va Qoidalari</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>O‘z vaqtida bajarish (SLA)</strong></td>
+            <td style="text-align:center;"><strong>40%</strong></td>
+            <td>Belgilangan muddatdan kechikmagan holda yechilgan vazifalar ulushi. Kechikkan har bir soat uchun jarima ballari ayiriladi.</td>
+          </tr>
+          <tr>
+            <td><strong>Qaytarilish koeffitsienti</strong></td>
+            <td style="text-align:center;"><strong>25%</strong></td>
+            <td>Operator yoki mijoz tomonidan kamchilik sabab qaytarilmagan (birinchi urinishda qabul qilingan) vazifalar nisbati.</td>
+          </tr>
+          <tr>
+            <td><strong>Reaksiya vaqti (Speed)</strong></td>
+            <td style="text-align:center;"><strong>20%</strong></td>
+            <td>Vazifa biriktirilgandan so‘ng uni «Ishga qabul qilish»gacha ketgan vaqt (standart: &lt; 30 daqiqa).</td>
+          </tr>
+          <tr>
+            <td><strong>Mijoz qoniqish reytingi (CSAT)</strong></td>
+            <td style="text-align:center;"><strong>15%</strong></td>
+            <td>Murojaat yopilganda mijoz bergan baho (1 dan 5 yulduzgacha).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>2. Operatorlar uchun KPI Ko‘rsatkichlari</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Ko‘rsatkich</th>
+            <th style="text-align:center;">Vazni</th>
+            <th>Baholash Mezonlari va Qoidalari</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Qabul qilish tezligi</strong></td>
+            <td style="text-align:center;"><strong>30%</strong></td>
+            <td>Mijoz murojaati kelgach uni 10 daqiqa ichida rasmiylashtirib mutaxassisga yo‘naltirish.</td>
+          </tr>
+          <tr>
+            <td><strong>Yechimni yetkazish tezligi</strong></td>
+            <td style="text-align:center;"><strong>35%</strong></td>
+            <td>Dasturchi yechim bergach, uni 2 soat ichida mijozga taqdim etish va tasdiq jarayonini boshlash.</td>
+          </tr>
+          <tr>
+            <td><strong>Muvaffaqiyatli yopilganlar</strong></td>
+            <td style="text-align:center;"><strong>20%</strong></td>
+            <td>Tasdiqlanib muvaffaqiyatli yakuniga yetkazilgan murojaatlar soni va ulushi.</td>
+          </tr>
+          <tr>
+            <td><strong>Ma’lumotlar to‘liqligi</strong></td>
+            <td style="text-align:center;"><strong>15%</strong></td>
+            <td>Murojaat ochilayotganda skrinshot, modul, mijoz ma’lumotlarining xatosiz to‘ldirilishi.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Reyting Tizimi va Darajalar</h2>
+      <div style="display: flex; gap: 8px; margin: 12px 0;">
+        <div style="flex:1; background:#ecfdf5; border:1px solid #10b981; border-radius:8px; padding:8px; text-align:center;">
+          <div style="font-weight:700; color:#047857; font-size:13px;">90 - 100 ball</div>
+          <div style="font-size:10.5px; color:#065f46;">A’lo (Bonus va mukofot)</div>
+        </div>
+        <div style="flex:1; background:#eff6ff; border:1px solid #3b82f6; border-radius:8px; padding:8px; text-align:center;">
+          <div style="font-weight:700; color:#1d4ed8; font-size:13px;">75 - 89 ball</div>
+          <div style="font-size:10.5px; color:#1e40af;">Yaxshi (Barqaror ijro)</div>
+        </div>
+        <div style="flex:1; background:#fffbeb; border:1px solid #f59e0b; border-radius:8px; padding:8px; text-align:center;">
+          <div style="font-weight:700; color:#b45309; font-size:13px;">60 - 74 ball</div>
+          <div style="font-size:10.5px; color:#92400e;">Qoniqarli (Nazoratda)</div>
+        </div>
+        <div style="flex:1; background:#fef2f2; border:1px solid #ef4444; border-radius:8px; padding:8px; text-align:center;">
+          <div style="font-weight:700; color:#b91c1c; font-size:13px;">&lt; 60 ball</div>
+          <div style="font-size:10.5px; color:#991b1b;">Qoniqarsiz (Chora ko‘riladi)</div>
+        </div>
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>TASK CONTROL 2.0 • Foydalanuvchi Qo‘llanmasi</span>
+      <span>8-sahifa</span>
+    </div>
+  </div>
+
+  <!-- ==================== 9. TELEGRAM BOT INTEGRATSIYASI ==================== -->
+  <div class="page-section">
+    <div class="page-content">
+      <h1>8. Telegram Bot va Avtomatik Bildirishnomalar</h1>
+
+      <p>
+        TASK CONTROL tizimi maxsus Telegram bot orqali real vaqt rejimida xodimlarni ogohlantiradi va rahbariyatga avtomatlashtirilgan monitoring hisobotlarini yetkazib beradi.
+      </p>
+
+      <h2>Bildirishnomalar Turlari va Eskalatsiya Jadvali</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Hodisa turi</th>
+            <th>Qabul qiluvchi</th>
+            <th>Yuborilish vaqti va Sharti</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Yangi vazifa tayinlandi</strong></td>
+            <td>Mutaxassis</td>
+            <td>Darhol (Murojaat biriktirilgan soniyada).</td>
+          </tr>
+          <tr>
+            <td><strong>Yechim taqdim etildi</strong></td>
+            <td>Operator</td>
+            <td>Darhol (Mutaxassis kod yoki build yuklaganda).</td>
+          </tr>
+          <tr>
+            <td><strong>Vazifa qaytarildi</strong></td>
+            <td>Mutaxassis</td>
+            <td>Darhol (Mijoz yoki operator e’tiroz bildirgan zahoti).</td>
+          </tr>
+          <tr>
+            <td><strong>Ijro eslatmasi (Reminder)</strong></td>
+            <td>Mutaxassis</td>
+            <td>Har 4 soatda (Jarayonda to‘xtab qolgan bo‘lsa).</td>
+          </tr>
+          <tr>
+            <td><strong>Mijoz tasdig‘i eslatmasi</strong></td>
+            <td>Operator</td>
+            <td>Har 2 soatda («Yetkazildi» maqomida qolib ketgan bo‘lsa).</td>
+          </tr>
+          <tr>
+            <td><strong>Eskalatsiya (Muddati o‘tdi)</strong></td>
+            <td>Menejer / Superadmin</td>
+            <td>SLA muddati tugaganidan 1 soat o‘tgach avtomatik.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Telegram Bot Xabarnomasi Namunasi</h2>
+      <div class="code-block" style="white-space: pre-wrap;">
+🔔 YANGI VAZIFA TAYINLANDI!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 Murojaat №: #1042
+🏢 Mijoz: "Universal Savdo" MCHJ
+⚡ Ustuvorlik: 🔴 Shoshilinch (Kritik)
+💻 Dastur moduli: Kassa & Fiskal modul
+📝 Muammo tavsifi: Chek chop etishda 504 Gateway xatoligi chiqmoqda.
+⏱ Belgilangan muddat: 17.11.2026, 18:00 gacha
+
+Iltimos, dasturga kirib topshiriqni qabul qiling!
+      </div>
+
+      <h2>Davriy Hisobotlar (Daily & Weekly Reports)</h2>
+      <p>
+        Har kuni soat <strong>09:00</strong> da va <strong>19:00</strong> da Superadmin va Menejerlarning Telegram akkauntiga quyidagi hisobotlar yetkaziladi:
+      </p>
+      <ul style="padding-left: 18px;">
+        <li>Bugungi qabul qilingan va navbatda turgan umumiy murojaatlar soni;</li>
+        <li>Muvaffaqiyatli yopilgan va mijoz tomonidan tasdiqlangan topshiriqlar;</li>
+        <li>Ayni paytda ijroda to‘xtab turgan va muddati o‘tgan kritik masalalar ro‘yxati;</li>
+        <li>Eng yuqori KPI ko‘rsatgan kun qahramonlari reytingi.</li>
+      </ul>
+    </div>
+    <div class="page-footer">
+      <span>TASK CONTROL 2.0 • Foydalanuvchi Qo‘llanmasi</span>
+      <span>9-sahifa</span>
+    </div>
+  </div>
+
+  <!-- ==================== 10. FAQ VA YORDAM ==================== -->
+  <div class="page-section">
+    <div class="page-content">
+      <h1>9. Tez-tez So‘raladigan Savollar (FAQ)</h1>
+
+      <div style="margin-bottom: 10px;">
+        <h3>Savol: Dasturchi yechim berdi, lekin mijoz bilan bog‘lana olmayapmiz. Nima qilish kerak?</h3>
+        <p><strong>Javob:</strong> Murojaat «Mijozga yetkazildi» maqomida qoldiriladi va izoh maydoniga «Mijoz telefoniga javob bermadi (1-urinish)» deb yoziladi. Tizim avtomatik eslatma berib turadi. Mijoz 3 ish kuni davomida javob bermasa, Menejer ruxsati bilan maxsus belgi bilan arxivlanadi.</p>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <h3>Savol: Boshqa operator kasal bo‘lib qolsa yoki ishda bo‘lmasa, uning murojaatini kim yopadi?</h3>
+        <p><strong>Javob:</strong> «Operator Lock» qoidasiga ko‘ra oddiy operatorlar bir-birining murojaatini yopa olmaydi. Ammo <strong>Superadmin</strong> yoki <strong>Menejer</strong> murojaat kartochkasiga kirib, mas’ul operatorni boshqa xodimga qayta biriktirishi mumkin. Shundan so‘ng yangi operator uni qonuniy boshqara oladi.</p>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <h3>Savol: Xodimga Telegram orqali xabarlar kelmayapti. Sababi nima?</h3>
+        <p><strong>Javob:</strong>
+          <br>1. Xodim botga kirib <code>/start</code> bosmagan (Telegram xavfsizlik qoidasi).
+          <br>2. Xodim profilida Telegram Chat ID xato kiritilgan. «Xodimlar» menyusiga kirib, tahrirlash oynasida Chat ID ni tekshiring.
+          <br>3. Serverda internet aloqasi yoki bot tokenida uzilish bo‘lgan.
+        </p>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <h3>Savol: Dasturga kirish parolini unutgan xodimga qanday yordam beriladi?</h3>
+        <p><strong>Javob:</strong> Superadmin «Xodimlar» bo‘limiga kiradi, kerakli xodim qatoridagi «Tahrirlash» tugmasini bosadi va unga yangi vaqtinchalik parol o‘rnatib beradi.</p>
+      </div>
+
+      <div class="callout callout-important" style="margin-top: 14px;">
+        <div class="callout-title">📞 Texnik qo‘llab-quvvatlash va yordam markazi</div>
+        Tizim bo‘yicha qo‘shimcha savollar, takliflar yoki server nosozliklari yuzaga kelganda tizim bosh administratori yoki rasmiy texnik qo‘llab-quvvatlash jamoasiga murojaat qilishingiz mumkin.
+      </div>
+
+      <div style="margin-top: 24px; text-align: center; color: var(--text-muted); font-size: 11px;">
+        Hujjat versiyasi: 2.0 • Ishlab chiquvchi: TASK CONTROL Team • 2026-yil 17-noyabr
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>TASK CONTROL 2.0 • Foydalanuvchi Qo‘llanmasi</span>
+      <span>10-sahifa</span>
+    </div>
+  </div>
+
+</body>
+</html>

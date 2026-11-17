@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: taskcontrol-backend
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - TELEGRAM_BOT_TOKEN=7996799482:AAGuXIr6jk-9fvY3kpo-nGQQV7X_CEYKPLc
+      - TELEGRAM_ADMIN_CHAT_ID=53663779
+      - NODE_ENV=production
+    volumes:
+      - ./backend/data:/app/data
+    networks:
+      - taskcontrol-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: taskcontrol-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - taskcontrol-network
+
+networks:
+  taskcontrol-network:
+    driver: bridge

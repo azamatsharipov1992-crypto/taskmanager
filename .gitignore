@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+*/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Production builds
+dist/
+*/dist/
+build/
+*/build/
+
+# Tauri & Rust build artifacts
+target/
+src-tauri/target/
+frontend/src-tauri/target/
+frontend/src-tauri/gen/schemas/
+
+# Environment and sensitive credentials
+.env
+*.env
+!.env.example
+*.local
+
+# Database files
+backend/dev.db
+backend/dev.db-journal
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

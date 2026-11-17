@@ -1,0 +1,221 @@
+// Prisma Schema for TASK CONTROL
+// Multi-user IT Task Management & Customer Support System
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  MANAGER
+  DEVELOPER
+  OPERATOR
+}
+
+enum StageId {
+  STAGE_1_ACCEPTED
+  STAGE_2_RESOLVED
+  STAGE_3_DISPATCHED
+  STAGE_4_CONFIRMED
+}
+
+enum IssueStatus {
+  NEW
+  ANALYSIS
+  ASSIGNED
+  IN_PROGRESS
+  WAITING
+  SOLUTION_READY
+  TESTING
+  CUSTOMER_NOTIFY
+  CUSTOMER_CONFIRM
+  REOPENED
+  CLOSED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id               String         @id @default(uuid())
+  name             String
+  email            String         @unique
+  passwordHash     String
+  role             UserRole       @default(DEVELOPER)
+  phone            String
+  telegramUsername String?
+  telegramChatId   String?
+  avatar           String?
+  isActive         Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  createdIssues    Issue[]        @relation("CreatedIssues")
+  assignedIssues   Issue[]        @relation("AssignedIssues")
+  dispatchedIssues Issue[]        @relation("DispatchedIssues")
+  closedIssues     Issue[]        @relation("ClosedIssues")
+  comments         IssueComment[]
+  auditLogs        AuditLog[]
+}
+
+model Customer {
+  id               String         @id @default(uuid())
+  companyName      String
+  contactPerson    String
+  phone            String
+  telegramUsername String?
+  address          String?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  issues           Issue[]
+  products         ProductCustomer[]
+}
+
+model Product {
+  id          String            @id @default(uuid())
+  name        String            @unique
+  code        String            @unique
+  description String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  modules     ProductModule[]
+  issues      Issue[]
+  customers   ProductCustomer[]
+}
+
+model ProductModule {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  issues      Issue[]
+}
+
+model ProductCustomer {
+  productId  String
+  customerId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@id([productId, customerId])
+}
+
+model Issue {
+  id               String         @id @default(uuid())
+  code             String         @unique // TC-YYYY-NNNNNN
+  title            String
+  description      String
+  priority         Priority       @default(MEDIUM)
+  status           IssueStatus    @default(NEW)
+  stage            StageId        @default(STAGE_1_ACCEPTED)
+
+  // Foreign keys
+  customerId       String
+  customer         Customer       @relation(fields: [customerId], references: [id])
+  productId        String
+  product          Product        @relation(fields: [productId], references: [id])
+  moduleId         String
+  module           ProductModule  @relation(fields: [moduleId], references: [id])
+
+  createdById      String
+  createdBy        User           @relation("CreatedIssues", fields: [createdById], references: [id])
+  assignedDevId    String?
+  assignedDev      User?          @relation("AssignedIssues", fields: [assignedDevId], references: [id])
+
+  // 4 Control Stages Data
+  reportedAt       DateTime       @default(now())
+  stage1CompletedAt DateTime?
+
+  // Stage 2: Developer Resolution
+  resolvedAt       DateTime?
+  solutionNote     String?
+  commitUrl        String?
+  appVersion       String?
+
+  // Stage 3: Manager Dispatched to Customer
+  dispatchedAt     DateTime?
+  dispatchedById   String?
+  dispatchedBy     User?          @relation("DispatchedIssues", fields: [dispatchedById], references: [id])
+  dispatchMethod   String?        // TELEGRAM, PHONE, MEETING, REMOTE
+  dispatchNote     String?
+
+  // Stage 4: Customer Confirmed Resolution
+  closedAt         DateTime?
+  closedById       String?
+  closedBy         User?          @relation("ClosedIssues", fields: [closedById], references: [id])
+  customerFeedback String?
+  customerRating   Int?           // 1-5
+
+  dueDate          DateTime?
+  lastReminderSentAt DateTime?
+  reminderCount    Int            @default(0)
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  comments         IssueComment[]
+  attachments      Attachment[]
+  reminderLogs     ReminderLog[]
+  auditLogs        AuditLog[]
+}
+
+model IssueComment {
+  id          String   @id @default(uuid())
+  issueId     String
+  issue       Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  content     String
+  stageChange String?
+  createdAt   DateTime @default(now())
+}
+
+model Attachment {
+  id         String   @id @default(uuid())
+  issueId    String
+  issue      Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  fileName   String
+  fileSize   Int
+  fileType   String
+  storageKey String
+  url        String
+  uploadedAt DateTime @default(now())
+}
+
+model ReminderLog {
+  id               String   @id @default(uuid())
+  issueId          String
+  issue            Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  targetRole       UserRole
+  targetRecipient  String
+  message          String
+  sentAt           DateTime @default(now())
+  status           String   @default("SENT")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  issueId    String?
+  issue      Issue?   @relation(fields: [issueId], references: [id])
+  action     String
+  details    String?
+  createdAt  DateTime @default(now())
+}
