@@ -44,6 +44,19 @@
       "telegramLinkedAt": "2026-11-20T04:50:17.294Z",
       "isActive": true,
       "createdAt": "2026-11-20T04:50:17.294Z"
+    },
+    {
+      "id": "usr_1795155502173",
+      "name": "Akrom Rustamov",
+      "phone": "+998 901234567",
+      "role": "MUTAXASSIS",
+      "login": "pc_spec_akrom",
+      "email": "pc_spec_akrom@taskcontrol.uz",
+      "password": "123456",
+      "telegramUsername": "akrom_dev",
+      "telegramLinkCode": "TC-MUT-3845",
+      "isActive": true,
+      "createdAt": "2026-11-20T06:18:22.173Z"
     }
   ],
   "customers": [
@@ -85,33 +98,33 @@
       ]
     },
     {
-      "id": "cust_1795151848918",
-      "inn": "302845112",
-      "companyName": "\"UNIVERSAL SAVDO BIZNES\" MCHJ",
+      "id": "cust_1795153095309",
+      "inn": "203797987",
+      "companyName": "Xorazm ETM",
       "companyStatus": "FAOL",
-      "legalAddress": "Toshkent shahri, O‘zbekiston",
-      "regionId": "reg_tashkent_city",
-      "regionName": "Toshkent shahri",
-      "primaryPhone": "+998901234567",
-      "contactPerson": "Rustam Karimov",
+      "legalAddress": "Xorazm viloyati, O‘zbekiston",
+      "regionId": "reg_khorezm",
+      "regionName": "Xorazm viloyati",
+      "primaryPhone": "+998976011555",
+      "contactPerson": "Umrbek",
       "preferredLanguage": "UZ",
       "notificationConsent": true,
       "dataSource": "MANUAL",
-      "sourceLastCheckedAt": "2026-11-20T05:17:28.918Z",
+      "sourceLastCheckedAt": "2026-11-20T05:38:15.309Z",
       "isActive": true,
       "productIds": [
         "prod_poscode"
       ],
       "products": [
         {
-          "id": "cp_1795151848918_prod_poscode",
+          "id": "cp_1795153095309_prod_poscode",
           "productId": "prod_poscode",
           "productName": "POSCODE",
           "isActive": true
         }
       ],
-      "createdAt": "2026-11-20T05:17:28.918Z",
-      "updatedAt": "2026-11-20T05:17:28.918Z",
+      "createdAt": "2026-11-20T05:38:15.309Z",
+      "updatedAt": "2026-11-20T05:38:15.309Z",
       "issuesCount": 0
     }
   ],
@@ -336,8 +349,8 @@
       "moduleId": "mod_pos_kassa",
       "moduleName": "Kassa va Savdo",
       "priority": "HIGH",
-      "status": "NEW",
-      "stage": "STAGE_1_ACCEPTED",
+      "status": "CLOSED",
+      "stage": "STAGE_4_CONFIRMED",
       "created_by_operator_id": "usr_1795150089679",
       "created_by_operator_name": "Farrux Bakpolatov",
       "cycles": [],
@@ -374,9 +387,232 @@
             "to": "STAGE_1_ACCEPTED"
           },
           "createdAt": "2026-11-20T05:17:59.776Z"
+        },
+        {
+          "id": "com_1795152905341",
+          "issueId": "iss_1795151879776",
+          "authorId": "usr_spec1",
+          "authorName": "Mutaxassis",
+          "authorRole": "MUTAXASSIS",
+          "content": "Vazifa mutaxassis tomonidan qabul qilindi va ish boshlandi.",
+          "createdAt": "2026-11-20T05:35:05.341Z"
+        },
+        {
+          "id": "com_1795152923139",
+          "issueId": "iss_1795151879776",
+          "authorId": "usr_spec1",
+          "authorName": "Mutaxassis",
+          "authorRole": "MUTAXASSIS",
+          "content": "Vazifa kutilmoqda holatiga o'tkazildi. Sabab: tekshiriayapman",
+          "createdAt": "2026-11-20T05:35:23.138Z"
+        },
+        {
+          "id": "com_1795152926540",
+          "issueId": "iss_1795151879776",
+          "authorId": "usr_spec1",
+          "authorName": "Mutaxassis",
+          "authorRole": "MUTAXASSIS",
+          "content": "Vazifa qayta faollashtirildi, ish davom ettirilmoqda.",
+          "createdAt": "2026-11-20T05:35:26.540Z"
+        },
+        {
+          "id": "com_1795152948744",
+          "issueId": "iss_1795151879776",
+          "authorId": "usr_spec1",
+          "authorName": "Mutaxassis",
+          "authorRole": "MUTAXASSIS",
+          "content": "Mas'ul mutaxassis yechimni taqdim etdi va qabul qilgan operator (Farrux Bakpolatov) ga yo'naltirdi. Izoh: ishladi",
+          "stageChange": {
+            "from": "STAGE_1_ACCEPTED",
+            "to": "STAGE_2_RESOLVED"
+          },
+          "createdAt": "2026-11-20T05:35:48.744Z"
+        },
+        {
+          "id": "com_1795152950594",
+          "issueId": "iss_1795151879776",
+          "authorId": "usr_1795150089679",
+          "authorName": "Farrux Bakpolatov",
+          "authorRole": "OPERATOR",
+          "content": "Yechim mijozga yetkazildi (TELEGRAM). Izoh: Mijozga yetkazildi. Mijoz tasdig'i kutilmoqda.",
+          "stageChange": {
+            "from": "STAGE_2_RESOLVED",
+            "to": "STAGE_3_DISPATCHED"
+          },
+          "createdAt": "2026-11-20T05:35:50.594Z"
+        },
+        {
+          "id": "com_1795152953278",
+          "issueId": "iss_1795151879776",
+          "authorId": "usr_1795150089679",
+          "authorName": "Farrux Bakpolatov",
+          "authorRole": "OPERATOR",
+          "content": "Mijoz yechimni to'liq tasdiqladi. Baho: 5 / 5 yulduz. Murojaat muvaffaqiyatli yopildi.",
+          "stageChange": {
+            "from": "STAGE_3_DISPATCHED",
+            "to": "STAGE_4_CONFIRMED"
+          },
+          "createdAt": "2026-11-20T05:35:53.278Z"
         }
       ],
-      "updatedAt": "2026-11-20T05:17:59.776Z"
+      "updatedAt": "2026-11-20T05:35:53.278Z",
+      "resolvedAt": "2026-11-20T05:35:48.744Z",
+      "solutionNote": "ishladi",
+      "dispatchedAt": "2026-11-20T05:35:50.594Z",
+      "dispatchedById": "usr_1795150089679",
+      "dispatchedByName": "Farrux Bakpolatov",
+      "dispatchMethod": "TELEGRAM",
+      "dispatchNote": "Mijozga yetkazildi",
+      "closedAt": "2026-11-20T05:35:53.278Z",
+      "closedById": "usr_1795150089679",
+      "closedByName": "Farrux Bakpolatov",
+      "customerFeedback": "Mijoz tekshirib ko'rdi va muammo bartaraf etilganini tasdiqladi.",
+      "customerRating": 5
+    },
+    {
+      "id": "iss_1795153129562",
+      "code": "TC-2026-000003",
+      "title": "gateway 404",
+      "description": "gateway",
+      "customerId": "cust_1795153095309",
+      "customerName": "Xorazm ETM",
+      "customerInn": "203797987",
+      "customerPhone": "+998976011555",
+      "contactPhoneSnapshot": "+998976011555",
+      "contactPersonSnapshot": "Umrbek",
+      "regionId": "reg_khorezm",
+      "regionName": "Xorazm viloyati",
+      "productId": "prod_poscode",
+      "productName": "POSCODE",
+      "moduleId": "mod_pos_kassa",
+      "moduleName": "Kassa va Savdo",
+      "priority": "MEDIUM",
+      "status": "REOPENED",
+      "stage": "STAGE_1_ACCEPTED",
+      "created_by_operator_id": "usr_1795150089679",
+      "created_by_operator_name": "Farrux Bakpolatov",
+      "current_specialist_id": "usr_1795150217294",
+      "current_specialist_name": "Narzullayev Akbar",
+      "cycles": [
+        {
+          "id": "cycle_1",
+          "cycleNumber": 1,
+          "specialistId": "usr_1795150217294",
+          "specialistName": "Narzullayev Akbar",
+          "assignedAt": "2026-11-20T05:38:49.562Z",
+          "waitingSeconds": 0,
+          "activeSeconds": 23,
+          "totalSeconds": 23,
+          "acceptedAt": "2026-11-20T06:16:54.963Z",
+          "startedAt": "2026-11-20T06:16:54.963Z",
+          "solutionReadyAt": "2026-11-20T06:17:18.239Z",
+          "solutionNote": "tayyor",
+          "returnedToOperatorAt": "2026-11-20T06:17:18.239Z"
+        },
+        {
+          "id": "cyc_1795155492917_2",
+          "cycleNumber": 2,
+          "specialistId": "usr_1795150217294",
+          "specialistName": "Narzullayev Akbar",
+          "assignedAt": "2026-11-20T06:18:12.917Z",
+          "returnReason": "xatolik takrorlandi",
+          "waitingSeconds": 0,
+          "activeSeconds": 0,
+          "totalSeconds": 0
+        }
+      ],
+      "currentCycleNumber": 2,
+      "reopenCount": 1,
+      "reportedAt": "2026-11-20T05:38:49.562Z",
+      "dueDate": "2026-11-22T00:00:00.000Z",
+      "reminderCount": 0,
+      "attachments": [
+        {
+          "id": "att_1795153129579_498",
+          "issueId": "iss_1795153129562",
+          "name": "att_1795153129579_498_ChatGPT_Image_Sep_25__2025__11_47_29_AM.png",
+          "originalName": "ChatGPT Image Sep 25, 2025, 11_47_29 AM.png",
+          "mimeType": "image/png",
+          "size": 2844071,
+          "sizeFormatted": "2.7 MB",
+          "fileCategory": "IMAGE",
+          "storagePath": "C:\\Users\\Admin\\.gemini\\antigravity\\scratch\\task_control\\backend\\data\\attachments\\att_1795153129579_498_ChatGPT_Image_Sep_25__2025__11_47_29_AM.png",
+          "url": "/api/attachments/att_1795153129579_498",
+          "uploadedAt": "2026-11-20T05:38:49.594Z",
+          "uploadedBy": "Farrux Bakpolatov"
+        }
+      ],
+      "comments": [
+        {
+          "id": "cmt_1795153129562",
+          "issueId": "iss_1795153129562",
+          "authorId": "usr_1795150089679",
+          "authorName": "Farrux Bakpolatov",
+          "authorRole": "OPERATOR",
+          "content": "Murojaat qabul qilindi va tizimda ro‘yxatdan o‘tkazildi. (Mijoz: Xorazm ETM, Viloyat: Xorazm viloyati)",
+          "stageChange": {
+            "from": "STAGE_1_ACCEPTED",
+            "to": "STAGE_1_ACCEPTED"
+          },
+          "createdAt": "2026-11-20T05:38:49.562Z"
+        },
+        {
+          "id": "com_1795155414964",
+          "issueId": "iss_1795153129562",
+          "authorId": "usr_spec1",
+          "authorName": "Narzullayev Akbar",
+          "authorRole": "MUTAXASSIS",
+          "content": "Vazifa mutaxassis tomonidan qabul qilindi va ish boshlandi.",
+          "createdAt": "2026-11-20T06:16:54.963Z"
+        },
+        {
+          "id": "com_1795155438241",
+          "issueId": "iss_1795153129562",
+          "authorId": "usr_spec1",
+          "authorName": "Narzullayev Akbar",
+          "authorRole": "MUTAXASSIS",
+          "content": "Mas'ul mutaxassis yechimni taqdim etdi va qabul qilgan operator (Farrux Bakpolatov) ga yo'naltirdi. Izoh: tayyor",
+          "stageChange": {
+            "from": "STAGE_1_ACCEPTED",
+            "to": "STAGE_2_RESOLVED"
+          },
+          "createdAt": "2026-11-20T06:17:18.239Z"
+        },
+        {
+          "id": "com_1795155456608",
+          "issueId": "iss_1795153129562",
+          "authorId": "usr_1795150089679",
+          "authorName": "Farrux Bakpolatov",
+          "authorRole": "OPERATOR",
+          "content": "Yechim mijozga yetkazildi (TELEGRAM). Izoh: Mijozga yetkazildi. Mijoz tasdig'i kutilmoqda.",
+          "stageChange": {
+            "from": "STAGE_2_RESOLVED",
+            "to": "STAGE_3_DISPATCHED"
+          },
+          "createdAt": "2026-11-20T06:17:36.608Z"
+        },
+        {
+          "id": "com_1795155492917",
+          "issueId": "iss_1795153129562",
+          "authorId": "usr_1795150089679",
+          "authorName": "Farrux Bakpolatov",
+          "authorRole": "OPERATOR",
+          "content": "⚠️ Mijoz murojaat natijasidan qoniqmadi va qaytardi. Sabab: xatolik takrorlandi. Yangi ish sikli #2 boshlandi.",
+          "stageChange": {
+            "from": "STAGE_1_ACCEPTED",
+            "to": "STAGE_1_ACCEPTED"
+          },
+          "createdAt": "2026-11-20T06:18:12.917Z"
+        }
+      ],
+      "updatedAt": "2026-11-20T06:18:12.917Z",
+      "resolvedAt": "2026-11-20T06:17:18.239Z",
+      "solutionNote": "tayyor",
+      "dispatchedAt": "2026-11-20T06:17:36.608Z",
+      "dispatchedById": "usr_1795150089679",
+      "dispatchedByName": "Farrux Bakpolatov",
+      "dispatchMethod": "TELEGRAM",
+      "dispatchNote": "Mijozga yetkazildi"
     }
   ],
   "reminderLogs": [
@@ -415,6 +651,42 @@
       "status": "SENT",
       "id": "rem_1795150340837",
       "sentAt": "2026-11-20T04:52:20.837Z"
+    },
+    {
+      "issueId": "iss_1795151879776",
+      "issueCode": "TC-2026-000002",
+      "issueTitle": "Kassada chek chop etilmayapti",
+      "targetRole": "SUPER_ADMIN",
+      "targetRecipient": "Boshqaruv & Administratorlar",
+      "stage": "STAGE_4_CONFIRMED",
+      "message": "🎉 <b>MUROJAAT MUVOFAQIYATLI YOPILDI!</b>\n\n📌 <b>Murojaat kodi:</b> <code>TC-2026-000002</code>\n🏢 <b>Mijoz:</b> \"UNIVERSAL SAVDO BIZNES\" MCHJ (STIR: 302845112)\n📍 <b>Viloyat:</b> Toshkent shahri\n💻 <b>Dastur:</b> POSCODE (Kassa va Savdo)\n👨‍💻 <b>Mutaxassis:</b> Mutaxassis\n👤 <b>Operator:</b> Farrux Bakpolatov\n🌟 <b>Mijoz bahosi:</b> ⭐️⭐️⭐️⭐️⭐️ (5/5)\n💬 <b>Mijoz fikri:</b> <i>\"Mijoz tekshirib ko'rdi va muammo bartaraf etilganini tasdiqladi.\"</i>\n⏱ <b>Yopilgan sana:</b> 20/11/2026, 10:35:53\n\n✅ <i>Barcha 4 nazorat bosqichlari to‘liq muvaffaqiyatli yakunlandi!</i>",
+      "status": "SENT",
+      "id": "rem_1795152953313",
+      "sentAt": "2026-11-20T05:35:53.313Z"
+    },
+    {
+      "issueId": "iss_1795153129562",
+      "issueCode": "TC-2026-000003",
+      "issueTitle": "gateway 404",
+      "targetRole": "MUTAXASSIS",
+      "targetRecipient": "Narzullayev Akbar (ansorkhon)",
+      "stage": "STAGE_1_ACCEPTED",
+      "message": "🔔 <b>YANGI VAZIFA BIRIKTIRILDI!</b>\n\n📌 <b>Murojaat kodi:</b> <code>TC-2026-000003</code>\n⚡️ <b>Muhimligi:</b> <b>MEDIUM</b>\n🏢 <b>Mijoz:</b> Xorazm ETM (STIR: 203797987)\n📍 <b>Hudud:</b> Xorazm viloyati\n💻 <b>Dastur:</b> POSCODE — Kassa va Savdo\n📝 <b>Muammo:</b> gateway 404\n\n👤 <b>Qabul qilgan operator:</b> Farrux Bakpolatov\n⏱ <b>Muddati:</b> 22/11/2026, 05:00:00\n\n👉 <i>Iltimos, TASK CONTROL tizimiga kirib vazifani qabul qiling va bajarishni boshlang!</i>",
+      "status": "SENT",
+      "id": "rem_1795153129606",
+      "sentAt": "2026-11-20T05:38:49.606Z"
+    },
+    {
+      "issueId": "iss_1795153129562",
+      "issueCode": "TC-2026-000003",
+      "issueTitle": "gateway 404",
+      "targetRole": "MUTAXASSIS",
+      "targetRecipient": "Narzullayev Akbar (ansorkhon)",
+      "stage": "STAGE_1_ACCEPTED",
+      "message": "⚠️ <b>DIQQAT: MUROJAAT QAYTARILDI!</b>\n\n📌 <b>Murojaat kodi:</b> <code>TC-2026-000003</code> (Ish sikli #2)\n🏢 <b>Mijoz:</b> Xorazm ETM\n💻 <b>Dastur:</b> POSCODE\n👨‍💻 <b>Mutaxassis:</b> Narzullayev Akbar\n👤 <b>Qaytargan operator:</b> Farrux Bakpolatov\n\n❌ <b>Mijoz e'tirozi / Qaytarish sababi:</b>\n<i>\"xatolik takrorlandi\"</i>\n\n👉 <i>Mijoz muammo bartaraf etilmaganini tasdiqlamadi. Iltimos, zudlik bilan qayta tahlil qiling!</i>",
+      "status": "SENT",
+      "id": "rem_1795155492919",
+      "sentAt": "2026-11-20T06:18:12.919Z"
     }
   ],
   "customerNotificationLogs": [],

@@ -47,6 +47,71 @@ app.get('/api/regions/:id/districts', (req, res) => {
 });
 
 // ==========================================
+// AUTHENTICATION & LOGIN
+// ==========================================
+
+app.post('/api/auth/login', (req, res) => {
+  const { login, password } = req.body;
+  if (!login || !password) {
+    return res.status(400).json({ success: false, error: 'Login va parol kiritilishi shart!' });
+  }
+
+  const cleanPhone = String(login).replace(/[\s\-\(\)]/g, '');
+  const user = db.getUsers().find(u => 
+    u.login.toLowerCase() === String(login).trim().toLowerCase() ||
+    u.phone.replace(/[\s\-\(\)]/g, '') === cleanPhone
+  );
+
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Bunday login yoki telefon raqami bilan xodim topilmadi!' });
+  }
+
+  if (user.password && user.password !== String(password).trim()) {
+    return res.status(401).json({ success: false, error: 'Kiritilgan parol noto‘g‘ri!' });
+  }
+
+  if (user.isActive === false) {
+    return res.status(403).json({ success: false, error: 'Ushbu profil faol emas (bloklangan). Administratorga murojaat qiling!' });
+  }
+
+  const { password: _, ...safeUser } = user;
+  const token = `tok_${user.id}_${Date.now()}`;
+
+  res.json({
+    success: true,
+    user: safeUser,
+    token
+  });
+});
+
+app.get('/api/auth/me', (req, res) => {
+  const authHeader = req.headers.authorization;
+  const userId = req.headers['x-user-id'] as string;
+
+  let user: any;
+  if (userId) {
+    user = db.getUserById(userId);
+  } else if (authHeader && authHeader.startsWith('Bearer tok_')) {
+    const raw = authHeader.replace('Bearer tok_', '');
+    const parts = raw.split('_');
+    if (parts[0]) {
+      user = db.getUserById(parts[0]);
+    }
+  }
+
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Avtorizatsiyadan o‘tilmagan' });
+  }
+
+  const { password: _, ...safeUser } = user;
+  res.json({ success: true, user: safeUser });
+});
+
+app.post('/api/auth/logout', (_req, res) => {
+  res.json({ success: true, message: 'Tizimdan muvaffaqiyatli chiqildi.' });
+});
+
+// ==========================================
 // SOFTWARE PRODUCTS
 // ==========================================
 

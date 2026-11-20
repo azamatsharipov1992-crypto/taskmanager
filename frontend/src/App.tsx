@@ -13,10 +13,20 @@ import { ProductsView } from './components/ProductsView';
 import { RemindersView } from './components/RemindersView';
 import { IssueDetailModal } from './components/IssueDetailModal';
 import { NewIssueModal } from './components/NewIssueModal';
+import { LoginView } from './components/LoginView';
 
 export const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    try {
+      const saved = localStorage.getItem('task_control_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const currentRole: UserRole = currentUser?.role || 'SUPER_ADMIN';
   const [currentTab, setCurrentTab] = useState<ActiveTab>('dashboard');
-  const [currentRole, setCurrentRole] = useState<UserRole>('SUPER_ADMIN');
   const [lang, setLang] = useState<Language>('UZ');
   
   // Day / Night mode
@@ -85,11 +95,13 @@ export const App: React.FC = () => {
   }, [selectedIssue?.id]);
 
   const getActiveOperatorId = () => {
+    if (currentUser?.role === 'OPERATOR') return currentUser.id;
     const operator = users.find(u => u.role === 'OPERATOR');
-    return operator?.id || 'usr_op1';
+    return operator?.id || currentUser?.id || 'usr_op1';
   };
 
   const getActiveSpecialistId = () => {
+    if (currentUser?.role === 'MUTAXASSIS' || (currentUser?.role as string) === 'DEVELOPER') return currentUser.id;
     const spec = users.find(u => u.role === 'MUTAXASSIS' || (u.role as string) === 'DEVELOPER');
     return spec?.id || 'usr_spec1';
   };
@@ -245,14 +257,34 @@ export const App: React.FC = () => {
 
   const unresolvedCount = issues.filter(i => i.status !== 'CLOSED' && i.status !== 'CANCELLED').length;
 
+  // If user is not logged in, show Login page
+  if (!currentUser) {
+    return (
+      <LoginView
+        onLogin={(user) => {
+          setCurrentUser(user);
+          setCurrentTab('dashboard');
+        }}
+        lang={lang}
+        setLang={setLang}
+        theme={theme}
+        setTheme={setTheme}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0A0F1D] text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* Navbar */}
       <Navbar
         currentTab={currentTab}
         setTab={setCurrentTab}
-        currentRole={currentRole}
-        setRole={setCurrentRole}
+        currentUser={currentUser}
+        onLogout={() => {
+          localStorage.removeItem('task_control_user');
+          localStorage.removeItem('task_control_token');
+          setCurrentUser(null);
+        }}
         lang={lang}
         setLang={setLang}
         theme={theme}
