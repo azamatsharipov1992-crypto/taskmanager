@@ -1,6 +1,30 @@
 import fs from 'fs';
 import path from 'path';
-import { Customer, Issue, IssueStatus, IssueWorkCycle, OperatorKPI, Priority, Product, ReminderLog, SpecialistKPI, StageId, SystemReportSummary, TelegramRecipient, User, UserRole } from './types';
+import {
+  Attachment,
+  Customer,
+  CustomerContact,
+  CustomerNotificationLog,
+  CustomerProduct,
+  DashboardStats,
+  Issue,
+  IssueStatus,
+  IssueWorkCycle,
+  OperatorKPI,
+  Priority,
+  Product,
+  ProductReportItem,
+  RegionProductMatrixRow,
+  RegionReportItem,
+  ReminderLog,
+  SpecialistKPI,
+  StageId,
+  SystemReportSummary,
+  TelegramRecipient,
+  User,
+  UserRole
+} from './types';
+import { UZBEKISTAN_REGIONS, RegionData, DistrictData } from './regionsData';
 
 interface DatabaseData {
   users: User[];
@@ -8,11 +32,13 @@ interface DatabaseData {
   products: Product[];
   issues: Issue[];
   reminderLogs: ReminderLog[];
+  customerNotificationLogs: CustomerNotificationLog[];
   telegramRecipients: TelegramRecipient[];
 }
 
 const DATA_DIR = path.join(__dirname, '../data');
 const DATA_FILE = path.join(DATA_DIR, 'db.json');
+const ATTACHMENTS_DIR = path.join(DATA_DIR, 'attachments');
 
 const INITIAL_USERS: User[] = [];
 
@@ -54,6 +80,16 @@ const INITIAL_PRODUCTS: Product[] = [
       { id: 'mod_miz_raw', name: 'Xomashyo ombori' },
       { id: 'mod_miz_qc', name: 'Sifat nazorati (QC)' }
     ]
+  },
+  {
+    id: 'prod_other',
+    name: 'Boshqa mahsulot',
+    code: 'OTH',
+    description: 'Boshqa individual dasturiy yechimlar va integratsiyalar',
+    modules: [
+      { id: 'mod_oth_custom', name: 'Maxsus modul / Skript' },
+      { id: 'mod_oth_api', name: 'Tashqi API Integratsiya' }
+    ]
   }
 ];
 
@@ -84,6 +120,9 @@ class Database {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
+    if (!fs.existsSync(ATTACHMENTS_DIR)) {
+      fs.mkdirSync(ATTACHMENTS_DIR, { recursive: true });
+    }
   }
 
   private loadData(): DatabaseData {
@@ -97,6 +136,7 @@ class Database {
         const products = Array.isArray(parsed.products) && parsed.products.length > 0 ? parsed.products : INITIAL_PRODUCTS;
         const customers = Array.isArray(parsed.customers) ? parsed.customers : [];
         const reminderLogs = Array.isArray(parsed.reminderLogs) ? parsed.reminderLogs : [];
+        const customerNotificationLogs = Array.isArray(parsed.customerNotificationLogs) ? parsed.customerNotificationLogs : [];
         const telegramRecipients = Array.isArray(parsed.telegramRecipients) && parsed.telegramRecipients.length > 0 ? parsed.telegramRecipients : INITIAL_RECIPIENTS;
 
         // Upgrade users with login/isActive/linkCode if missing
@@ -107,7 +147,31 @@ class Database {
           if (u.role === 'DEVELOPER') u.role = 'MUTAXASSIS';
         });
 
-        // Upgrade issues with operator lock and cycles if missing
+        // Upgrade customers with INN and regions if missing
+        customers.forEach((c: any, idx: number) => {
+          if (!c.inn) c.inn = `30000000${(idx + 1) % 10}`;
+          if (!c.companyStatus) c.companyStatus = 'FAOL';
+          if (!c.legalAddress) c.legalAddress = c.address || 'Toshkent shahri';
+          if (!c.regionId) c.regionId = 'reg_tashkent_city';
+          if (!c.regionName) c.regionName = 'Toshkent shahri';
+          if (!c.primaryPhone) c.primaryPhone = c.phone || '+998901234567';
+          if (!c.preferredLanguage) c.preferredLanguage = 'UZ';
+          if (!c.dataSource) c.dataSource = 'MANUAL';
+          if (c.notificationConsent === undefined) c.notificationConsent = true;
+          if (!Array.isArray(c.products)) {
+            c.products = (c.productIds || []).map((pId: string) => {
+              const p = products.find(prod => prod.id === pId);
+              return {
+                id: `cp_${Date.now()}_${pId}`,
+                productId: pId,
+                productName: p?.name || pId,
+                isActive: true
+              };
+            });
+          }
+        });
+
+        // Upgrade issues with operator lock, customerInn, region, attachments
         issues.forEach((iss: any) => {
           if (!iss.created_by_operator_id) {
             iss.created_by_operator_id = iss.createdById || 'usr_op1';
@@ -126,6 +190,15 @@ class Database {
           if (iss.reopenCount === undefined) {
             iss.reopenCount = 0;
           }
+          if (!iss.attachments) {
+            iss.attachments = [];
+          }
+          if (!iss.regionId) {
+            const cust = customers.find((c: any) => c.id === iss.customerId);
+            iss.regionId = cust?.regionId || 'reg_tashkent_city';
+            iss.regionName = cust?.regionName || 'Toshkent shahri';
+            iss.customerInn = cust?.inn || '300000001';
+          }
         });
 
         return {
@@ -134,6 +207,7 @@ class Database {
           products,
           issues,
           reminderLogs,
+          customerNotificationLogs,
           telegramRecipients
         };
       }
@@ -147,6 +221,7 @@ class Database {
       products: INITIAL_PRODUCTS,
       issues: INITIAL_ISSUES,
       reminderLogs: [],
+      customerNotificationLogs: [],
       telegramRecipients: INITIAL_RECIPIENTS
     };
   }
@@ -160,7 +235,25 @@ class Database {
     }
   }
 
-  // --- Users / Employees ---
+  // ==========================================
+  // REGIONS & DISTRICTS
+  // ==========================================
+  getRegions(): RegionData[] {
+    return UZBEKISTAN_REGIONS;
+  }
+
+  getRegionById(id: string): RegionData | undefined {
+    return UZBEKISTAN_REGIONS.find(r => r.id === id);
+  }
+
+  getDistrictsByRegion(regionId: string): DistrictData[] {
+    const region = this.getRegionById(regionId);
+    return region ? region.districts : [];
+  }
+
+  // ==========================================
+  // USERS / EMPLOYEES
+  // ==========================================
   getUsers(filters?: { role?: string; isActive?: boolean; search?: string }): User[] {
     let result = this.data.users;
     if (filters) {
@@ -296,28 +389,375 @@ class Database {
     return true;
   }
 
-  // --- Customers & Products ---
-  getCustomers(): Customer[] {
-    return this.data.customers || [];
+  // ==========================================
+  // CUSTOMER ACCOUNTS DIRECTORY
+  // ==========================================
+  getCustomers(filters?: {
+    search?: string;
+    regionId?: string;
+    productId?: string;
+    telegramLinked?: string;
+    isActive?: string;
+  }): Customer[] {
+    let result = (this.data.customers || []).map(cust => {
+      const issues = (this.data.issues || []).filter(i => i.customerId === cust.id);
+      return {
+        ...cust,
+        issuesCount: issues.length
+      };
+    });
+
+    if (filters) {
+      if (filters.search) {
+        const q = filters.search.toLowerCase().trim();
+        result = result.filter(c =>
+          (c.inn && c.inn.includes(q)) ||
+          c.companyName.toLowerCase().includes(q) ||
+          c.primaryPhone.includes(q) ||
+          (c.secondaryPhone && c.secondaryPhone.includes(q)) ||
+          c.contactPerson.toLowerCase().includes(q) ||
+          (c.telegramUsername && c.telegramUsername.toLowerCase().includes(q))
+        );
+      }
+      if (filters.regionId && filters.regionId !== 'ALL') {
+        result = result.filter(c => c.regionId === filters.regionId);
+      }
+      if (filters.productId && filters.productId !== 'ALL') {
+        result = result.filter(c => 
+          (c.products || []).some(p => p.productId === filters.productId) ||
+          (c.productIds || []).includes(filters.productId)
+        );
+      }
+      if (filters.telegramLinked !== undefined && filters.telegramLinked !== 'ALL') {
+        const isLinked = filters.telegramLinked === 'true';
+        result = result.filter(c => (!!c.telegramChatId) === isLinked);
+      }
+      if (filters.isActive !== undefined && filters.isActive !== 'ALL') {
+        const isActive = filters.isActive === 'true';
+        result = result.filter(c => c.isActive === isActive);
+      }
+    }
+
+    return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
-  addCustomer(customer: Omit<Customer, 'id' | 'createdAt'>): Customer {
-    const newCustomer: Customer = {
-      ...customer,
-      id: `cust_${Date.now()}`,
-      createdAt: new Date().toISOString()
+  getCustomerById(id: string): Customer | undefined {
+    const cust = (this.data.customers || []).find(c => c.id === id);
+    if (!cust) return undefined;
+    const issues = (this.data.issues || []).filter(i => i.customerId === cust.id);
+    return {
+      ...cust,
+      issuesCount: issues.length
     };
+  }
+
+  getCustomerByInn(inn: string): Customer | undefined {
+    const cleanInn = inn.trim().replace(/\D/g, '');
+    return (this.data.customers || []).find(c => c.inn === cleanInn);
+  }
+
+  getCustomerByLinkToken(token: string): Customer | undefined {
+    return (this.data.customers || []).find(c => c.telegramLinkToken === token);
+  }
+
+  addCustomer(customerData: {
+    inn: string;
+    companyName: string;
+    shortName?: string;
+    companyStatus?: 'FAOL' | 'TUGATILGAN' | 'TOXTATILGAN';
+    legalAddress?: string;
+    regionId: string;
+    districtId?: string;
+    districtName?: string;
+    activityAddress?: string;
+    primaryPhone: string;
+    secondaryPhone?: string;
+    contactPerson: string;
+    position?: string;
+    preferredLanguage?: 'UZ' | 'RU';
+    responsibleOperatorId?: string;
+    notes?: string;
+    products?: CustomerProduct[];
+    productIds?: string[];
+    dataSource?: 'IHAMKOR' | 'MANUAL' | 'HYBRID';
+  }): { success: boolean; customer?: Customer; error?: string } {
+    const cleanInn = customerData.inn.trim().replace(/\D/g, '');
+    if (cleanInn.length !== 9) {
+      return { success: false, error: 'STIR/INN aynan 9 ta raqamdan iborat bo‘lishi shart!' };
+    }
+
+    const existing = this.getCustomerByInn(cleanInn);
+    if (existing) {
+      return { success: false, error: `Ushbu STIR (${cleanInn}) bo‘yicha mijoz mavjud: "${existing.companyName}"!` };
+    }
+
+    const region = this.getRegionById(customerData.regionId) || UZBEKISTAN_REGIONS[0];
+    const operator = customerData.responsibleOperatorId ? this.getUserById(customerData.responsibleOperatorId) : undefined;
+
+    const id = `cust_${Date.now()}`;
+    const now = new Date().toISOString();
+
+    const formattedProducts: CustomerProduct[] = (customerData.products && customerData.products.length > 0)
+      ? customerData.products.map(p => ({
+          ...p,
+          id: p.id || `cp_${Date.now()}_${p.productId}`,
+          isActive: p.isActive !== undefined ? p.isActive : true
+        }))
+      : (customerData.productIds || []).map(pId => {
+          const p = this.data.products.find(prod => prod.id === pId);
+          return {
+            id: `cp_${Date.now()}_${pId}`,
+            productId: pId,
+            productName: p?.name || pId,
+            isActive: true
+          };
+        });
+
+    const newCustomer: Customer = {
+      id,
+      inn: cleanInn,
+      companyName: customerData.companyName.trim(),
+      shortName: customerData.shortName,
+      companyStatus: customerData.companyStatus || 'FAOL',
+      legalAddress: customerData.legalAddress || `${region.name_uz}, O‘zbekiston`,
+      regionId: region.id,
+      regionName: region.name_uz,
+      districtId: customerData.districtId,
+      districtName: customerData.districtName,
+      activityAddress: customerData.activityAddress,
+      primaryPhone: customerData.primaryPhone.trim(),
+      secondaryPhone: customerData.secondaryPhone ? customerData.secondaryPhone.trim() : undefined,
+      contactPerson: customerData.contactPerson.trim(),
+      position: customerData.position,
+      preferredLanguage: customerData.preferredLanguage || 'UZ',
+      responsibleOperatorId: operator?.id,
+      responsibleOperatorName: operator?.name,
+      notificationConsent: true,
+      dataSource: customerData.dataSource || 'MANUAL',
+      sourceLastCheckedAt: now,
+      isActive: true,
+      notes: customerData.notes,
+      productIds: formattedProducts.map(p => p.productId),
+      products: formattedProducts,
+      createdAt: now,
+      updatedAt: now,
+      issuesCount: 0
+    };
+
     if (!this.data.customers) this.data.customers = [];
     this.data.customers.push(newCustomer);
     this.saveData();
-    return newCustomer;
+
+    return { success: true, customer: newCustomer };
   }
 
+  updateCustomer(id: string, updates: Partial<Customer>): { success: boolean; customer?: Customer; error?: string } {
+    const customer = this.getCustomerById(id);
+    if (!customer) return { success: false, error: 'Mijoz topilmadi!' };
+
+    if (updates.inn && updates.inn !== customer.inn) {
+      const cleanInn = updates.inn.trim().replace(/\D/g, '');
+      const existing = this.getCustomerByInn(cleanInn);
+      if (existing && existing.id !== id) {
+        return { success: false, error: `Ushbu STIR (${cleanInn}) boshqa mijozda ro‘yxatga olingan!` };
+      }
+      updates.inn = cleanInn;
+    }
+
+    if (updates.regionId && updates.regionId !== customer.regionId) {
+      const reg = this.getRegionById(updates.regionId);
+      if (reg) updates.regionName = reg.name_uz;
+    }
+
+    if (updates.responsibleOperatorId && updates.responsibleOperatorId !== customer.responsibleOperatorId) {
+      const op = this.getUserById(updates.responsibleOperatorId);
+      if (op) updates.responsibleOperatorName = op.name;
+    }
+
+    if (updates.products) {
+      updates.productIds = updates.products.map(p => p.productId);
+    }
+
+    updates.updatedAt = new Date().toISOString();
+    Object.assign(customer, updates);
+    this.saveData();
+
+    return { success: true, customer };
+  }
+
+  deleteCustomer(id: string): { success: boolean; error?: string } {
+    const customer = this.getCustomerById(id);
+    if (!customer) return { success: false, error: 'Mijoz topilmadi!' };
+
+    this.data.customers = (this.data.customers || []).filter(c => c.id !== id);
+    this.saveData();
+    return { success: true };
+  }
+
+  setCustomerTelegramLinkToken(customerId: string): { success: boolean; token?: string; linkUrl?: string; error?: string } {
+    const customer = this.getCustomerById(customerId);
+    if (!customer) return { success: false, error: 'Mijoz topilmadi!' };
+
+    const randomSuffix = Math.random().toString(36).substring(2, 10);
+    const token = `cust_${customer.inn}_${randomSuffix}`;
+    const expiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString(); // 48 soat
+
+    customer.telegramLinkToken = token;
+    customer.telegramLinkExpiresAt = expiresAt;
+    this.saveData();
+
+    const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'task_control_bot';
+    const linkUrl = `https://t.me/${botUsername}?start=${token}`;
+
+    return { success: true, token, linkUrl };
+  }
+
+  linkCustomerTelegram(customerId: string, chatId: string, username?: string): boolean {
+    const customer = this.getCustomerById(customerId);
+    if (!customer) return false;
+
+    customer.telegramChatId = chatId;
+    if (username) customer.telegramUsername = username.replace('@', '');
+    customer.telegramLinkedAt = new Date().toISOString();
+    customer.telegramLinkToken = undefined;
+    customer.telegramLinkExpiresAt = undefined;
+    customer.notificationConsent = true;
+
+    this.saveData();
+    return true;
+  }
+
+  unlinkCustomerTelegram(customerId: string): boolean {
+    const customer = this.getCustomerById(customerId);
+    if (!customer) return false;
+
+    customer.telegramChatId = undefined;
+    customer.telegramUsername = undefined;
+    customer.telegramLinkedAt = undefined;
+    customer.telegramLinkToken = undefined;
+    customer.telegramLinkExpiresAt = undefined;
+
+    this.saveData();
+    return true;
+  }
+
+  // --- Customer Notification Logs ---
+  addCustomerNotificationLog(log: Omit<CustomerNotificationLog, 'id' | 'sentAt'>): CustomerNotificationLog {
+    const newLog: CustomerNotificationLog = {
+      ...log,
+      id: `cnl_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      sentAt: new Date().toISOString()
+    };
+    if (!this.data.customerNotificationLogs) this.data.customerNotificationLogs = [];
+    this.data.customerNotificationLogs.push(newLog);
+    this.saveData();
+    return newLog;
+  }
+
+  getCustomerNotificationLogs(filters?: { customerId?: string; issueId?: string }): CustomerNotificationLog[] {
+    let logs = this.data.customerNotificationLogs || [];
+    if (filters?.customerId) logs = logs.filter(l => l.customerId === filters.customerId);
+    if (filters?.issueId) logs = logs.filter(l => l.issueId === filters.issueId);
+    return logs.sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
+  }
+
+  // ==========================================
+  // PRODUCTS
+  // ==========================================
   getProducts(): Product[] {
     return this.data.products;
   }
 
-  // --- Telegram Recipients ---
+  // ==========================================
+  // ATTACHMENTS & MEDIA FILES
+  // ==========================================
+  saveAttachment(
+    issueId: string,
+    file: {
+      originalName: string;
+      mimeType: string;
+      buffer: Buffer;
+      uploadedBy: string;
+    }
+  ): Attachment {
+    this.ensureDirectoryExistence();
+    const id = `att_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const safeName = file.originalName.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const fileName = `${id}_${safeName}`;
+    const filePath = path.join(ATTACHMENTS_DIR, fileName);
+
+    fs.writeFileSync(filePath, file.buffer);
+
+    let category: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'ARCHIVE' | 'OTHER' = 'OTHER';
+    if (file.mimeType.startsWith('image/')) category = 'IMAGE';
+    else if (file.mimeType.startsWith('video/')) category = 'VIDEO';
+    else if (file.mimeType.includes('pdf') || file.mimeType.includes('word') || file.mimeType.includes('sheet') || file.mimeType.includes('excel') || file.mimeType.includes('text')) category = 'DOCUMENT';
+    else if (file.mimeType.includes('zip') || file.mimeType.includes('rar') || file.mimeType.includes('tar') || file.mimeType.includes('7z')) category = 'ARCHIVE';
+
+    const bytes = file.buffer.length;
+    const sizeFormatted = bytes > 1024 * 1024 
+      ? `${(bytes / (1024 * 1024)).toFixed(1)} MB` 
+      : `${Math.round(bytes / 1024)} KB`;
+
+    const attachment: Attachment = {
+      id,
+      issueId,
+      name: fileName,
+      originalName: file.originalName,
+      mimeType: file.mimeType,
+      size: bytes,
+      sizeFormatted,
+      fileCategory: category,
+      storagePath: filePath,
+      url: `/api/attachments/${id}`,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: file.uploadedBy
+    };
+
+    const issue = this.getIssueById(issueId);
+    if (issue) {
+      if (!issue.attachments) issue.attachments = [];
+      issue.attachments.push(attachment);
+      this.saveData();
+    }
+
+    return attachment;
+  }
+
+  getAttachmentById(attachmentId: string): { attachment?: Attachment; filePath?: string } {
+    for (const issue of (this.data.issues || [])) {
+      const att = (issue.attachments || []).find(a => a.id === attachmentId);
+      if (att) {
+        return { attachment: att, filePath: att.storagePath };
+      }
+    }
+    return {};
+  }
+
+  deleteAttachment(issueId: string, attachmentId: string): boolean {
+    const issue = this.getIssueById(issueId);
+    if (!issue || !issue.attachments) return false;
+
+    const attIndex = issue.attachments.findIndex(a => a.id === attachmentId);
+    if (attIndex === -1) return false;
+
+    const att = issue.attachments[attIndex];
+    if (att.storagePath && fs.existsSync(att.storagePath)) {
+      try {
+        fs.unlinkSync(att.storagePath);
+      } catch (err) {
+        console.warn('Failed to delete physical file:', err);
+      }
+    }
+
+    issue.attachments.splice(attIndex, 1);
+    this.saveData();
+    return true;
+  }
+
+  // ==========================================
+  // TELEGRAM RECIPIENTS (INTERNAL ADMINS)
+  // ==========================================
   getTelegramRecipients(): TelegramRecipient[] {
     return this.data.telegramRecipients || [];
   }
@@ -356,7 +796,9 @@ class Database {
     return false;
   }
 
-  // --- Issues Management ---
+  // ==========================================
+  // ISSUES MANAGEMENT
+  // ==========================================
   getIssues(): Issue[] {
     return this.data.issues || [];
   }
@@ -369,12 +811,16 @@ class Database {
     title: string;
     description: string;
     customerId: string;
+    customerInn?: string;
     productId: string;
     moduleId: string;
     priority: Priority;
     created_by_operator_id: string; // Locked to operator
     assigned_specialist_id?: string;
     dueDate?: string;
+    regionId?: string;
+    contactPhoneSnapshot?: string;
+    contactPersonSnapshot?: string;
   }): Issue {
     const now = new Date().toISOString();
     const customer = (this.data.customers || []).find(c => c.id === issueData.customerId);
@@ -383,13 +829,17 @@ class Database {
     const operator = this.getUserById(issueData.created_by_operator_id) || this.data.users.find(u => u.role === 'OPERATOR');
     const specialist = issueData.assigned_specialist_id ? this.getUserById(issueData.assigned_specialist_id) : undefined;
 
+    // Snapshot region from issueData or customer or fallback
+    const targetRegionId = issueData.regionId || customer?.regionId || 'reg_tashkent_city';
+    const regionObj = this.getRegionById(targetRegionId) || UZBEKISTAN_REGIONS[0];
+
     const count = (this.data.issues?.length || 0) + 1;
     const code = `TC-2026-${String(count).padStart(6, '0')}`;
 
     const cycles: IssueWorkCycle[] = [];
     if (specialist) {
       cycles.push({
-        id: `cyc_${Date.now()}_1`,
+        id: `cycle_1`,
         cycleNumber: 1,
         specialistId: specialist.id,
         specialistName: specialist.name,
@@ -406,35 +856,44 @@ class Database {
       title: issueData.title,
       description: issueData.description,
       customerId: issueData.customerId,
-      customerName: customer ? customer.companyName : 'Noma\'lum mijoz',
-      customerPhone: customer?.phone,
+      customerName: customer?.companyName || 'Noma\'lum korxona',
+      customerInn: issueData.customerInn || customer?.inn || '300000001',
+      customerPhone: customer?.primaryPhone,
+      contactPhoneSnapshot: issueData.contactPhoneSnapshot || customer?.primaryPhone,
+      contactPersonSnapshot: issueData.contactPersonSnapshot || customer?.contactPerson,
+      regionId: regionObj.id,
+      regionName: regionObj.name_uz,
+      districtName: customer?.districtName,
       productId: issueData.productId,
-      productName: product ? product.name : 'Noma\'lum dastur',
+      productName: product?.name || 'POSCODE',
       moduleId: issueData.moduleId,
-      moduleName: module ? module.name : 'Asosiy modul',
+      moduleName: module?.name || 'Asosiy modul',
       priority: issueData.priority || 'MEDIUM',
       status: specialist ? 'ASSIGNED' : 'NEW',
       stage: 'STAGE_1_ACCEPTED',
-      created_by_operator_id: operator ? operator.id : 'usr_op1',
-      created_by_operator_name: operator ? operator.name : 'Malika Karimova',
+      created_by_operator_id: operator?.id || 'usr_op1',
+      created_by_operator_name: operator?.name || 'Operator',
       current_specialist_id: specialist?.id,
       current_specialist_name: specialist?.name,
+      cycles,
       currentCycleNumber: cycles.length > 0 ? 1 : 0,
       reopenCount: 0,
       reportedAt: now,
-      stage1CompletedAt: specialist ? now : undefined,
       dueDate: issueData.dueDate,
       reminderCount: 0,
-      cycles,
       attachments: [],
       comments: [
         {
-          id: `com_${Date.now()}`,
+          id: `cmt_${Date.now()}`,
           issueId: `iss_${Date.now()}`,
           authorId: operator?.id || 'usr_op1',
           authorName: operator?.name || 'Operator',
           authorRole: 'OPERATOR',
-          content: `Murojaat operator tomonidan qabul qilindi va tizimga kiritildi.${specialist ? ` Mas'ul mutaxassis: ${specialist.name}` : ''}`,
+          content: `Murojaat qabul qilindi va tizimda ro‘yxatdan o‘tkazildi. (Mijoz: ${customer?.companyName || 'Mijoz'}, Viloyat: ${regionObj.name_uz})`,
+          stageChange: {
+            from: 'STAGE_1_ACCEPTED',
+            to: 'STAGE_1_ACCEPTED'
+          },
           createdAt: now
         }
       ],
@@ -442,9 +901,19 @@ class Database {
     };
 
     if (!this.data.issues) this.data.issues = [];
-    this.data.issues.unshift(newIssue);
+    this.data.issues.push(newIssue);
     this.saveData();
+
     return newIssue;
+  }
+
+  updateIssue(id: string, updates: Partial<Issue>): Issue | undefined {
+    const issue = this.getIssueById(id);
+    if (!issue) return undefined;
+
+    Object.assign(issue, updates, { updatedAt: new Date().toISOString() });
+    this.saveData();
+    return issue;
   }
 
   assignSpecialist(issueId: string, specialistId: string, assignedById: string): Issue | null {
@@ -747,32 +1216,27 @@ class Database {
     return issue;
   }
 
-  updateIssue(id: string, updates: Partial<Issue>): Issue | null {
-    const issue = this.getIssueById(id);
-    if (!issue) return null;
-    Object.assign(issue, updates);
+  addComment(issueId: string, commentData: { authorId: string; content: string; stageChange?: { from: StageId; to: StageId } }): Issue | undefined {
+    const issue = this.getIssueById(issueId);
+    if (!issue) return undefined;
+
+    const author = this.getUserById(commentData.authorId);
+    const comment = {
+      id: `cmt_${Date.now()}`,
+      issueId,
+      authorId: commentData.authorId,
+      authorName: author?.name || 'Foydalanuvchi',
+      authorRole: author?.role || 'OPERATOR',
+      content: commentData.content,
+      stageChange: commentData.stageChange,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!issue.comments) issue.comments = [];
+    issue.comments.push(comment);
     issue.updatedAt = new Date().toISOString();
     this.saveData();
     return issue;
-  }
-
-  addComment(issueId: string, commentData: Omit<Comment, 'id' | 'issueId' | 'createdAt'>): Comment | null {
-    const issue = this.getIssueById(issueId);
-    if (!issue) return null;
-    const newComment: Comment = {
-      id: `com_${Date.now()}`,
-      issueId,
-      ...commentData,
-      createdAt: new Date().toISOString()
-    };
-    issue.comments.push(newComment);
-    issue.updatedAt = new Date().toISOString();
-    this.saveData();
-    return newComment;
-  }
-
-  getReminderLogs(): ReminderLog[] {
-    return this.data.reminderLogs || [];
   }
 
   addReminderLog(log: Omit<ReminderLog, 'id' | 'sentAt'>): ReminderLog {
@@ -782,68 +1246,239 @@ class Database {
       sentAt: new Date().toISOString()
     };
     if (!this.data.reminderLogs) this.data.reminderLogs = [];
-    this.data.reminderLogs.unshift(newLog);
-    if (this.data.reminderLogs.length > 200) {
-      this.data.reminderLogs = this.data.reminderLogs.slice(0, 200);
-    }
+    this.data.reminderLogs.push(newLog);
     this.saveData();
     return newLog;
   }
 
-  // --- KPI Engines ---
+  getReminderLogs(): ReminderLog[] {
+    return this.data.reminderLogs || [];
+  }
+
+  // ==========================================
+  // REGIONAL & PRODUCT ANALYTICS
+  // ==========================================
+  getRegionReports(): RegionReportItem[] {
+    const issues = this.data.issues || [];
+    const customers = this.data.customers || [];
+    const totalIssues = issues.length;
+
+    return UZBEKISTAN_REGIONS.map(reg => {
+      const regIssues = issues.filter(i => i.regionId === reg.id || i.regionName === reg.name_uz);
+      const closed = regIssues.filter(i => i.status === 'CLOSED').length;
+      const open = regIssues.length - closed;
+      const reopened = regIssues.reduce((sum, i) => sum + (i.reopenCount || 0), 0);
+      const regCustCount = customers.filter(c => c.regionId === reg.id).length;
+      const sharePercentage = totalIssues > 0 ? Number(((regIssues.length / totalIssues) * 100).toFixed(1)) : 0;
+
+      return {
+        regionId: reg.id,
+        regionName: reg.name_uz,
+        totalIssues: regIssues.length,
+        closedIssues: closed,
+        openIssues: open,
+        reopenedIssues: reopened,
+        sharePercentage,
+        customerCount: regCustCount
+      };
+    }).sort((a, b) => b.totalIssues - a.totalIssues);
+  }
+
+  getProductReports(): ProductReportItem[] {
+    const issues = this.data.issues || [];
+    const customers = this.data.customers || [];
+    const totalIssues = issues.length;
+
+    return this.data.products.map(prod => {
+      const prodIssues = issues.filter(i => i.productId === prod.id || i.productName.toLowerCase() === prod.name.toLowerCase());
+      const closed = prodIssues.filter(i => i.status === 'CLOSED').length;
+      const open = prodIssues.length - closed;
+      const reopened = prodIssues.reduce((sum, i) => sum + (i.reopenCount || 0), 0);
+      const activeCust = customers.filter(c => 
+        (c.products || []).some(cp => cp.productId === prod.id && cp.isActive) ||
+        (c.productIds || []).includes(prod.id)
+      ).length;
+      const sharePercentage = totalIssues > 0 ? Number(((prodIssues.length / totalIssues) * 100).toFixed(1)) : 0;
+
+      return {
+        productId: prod.id,
+        productName: prod.name,
+        code: prod.code,
+        totalIssues: prodIssues.length,
+        closedIssues: closed,
+        openIssues: open,
+        reopenedIssues: reopened,
+        sharePercentage,
+        activeCustomerCount: activeCust
+      };
+    }).sort((a, b) => b.totalIssues - a.totalIssues);
+  }
+
+  getRegionProductMatrix(): RegionProductMatrixRow[] {
+    const issues = this.data.issues || [];
+    const products = this.data.products;
+
+    return UZBEKISTAN_REGIONS.map(reg => {
+      const regIssues = issues.filter(i => i.regionId === reg.id || i.regionName === reg.name_uz);
+      const productCounts: Record<string, number> = {};
+
+      products.forEach(p => {
+        productCounts[p.id] = regIssues.filter(i => i.productId === p.id || i.productName.toLowerCase() === p.name.toLowerCase()).length;
+      });
+
+      return {
+        regionId: reg.id,
+        regionName: reg.name_uz,
+        products: productCounts,
+        total: regIssues.length
+      };
+    }).sort((a, b) => b.total - a.total);
+  }
+
+  getCustomerTelegramAnalytics() {
+    const customers = this.data.customers || [];
+    const logs = this.data.customerNotificationLogs || [];
+
+    const linkedCount = customers.filter(c => !!c.telegramChatId).length;
+    const unlinkedCount = customers.length - linkedCount;
+    const totalNotificationsSent = logs.filter(l => l.deliveryStatus === 'SENT' || l.deliveryStatus === 'SIMULATED').length;
+    const totalNotificationsFailed = logs.filter(l => l.deliveryStatus === 'FAILED').length;
+
+    return {
+      totalCustomers: customers.length,
+      linkedCount,
+      unlinkedCount,
+      linkedPercentage: customers.length > 0 ? Number(((linkedCount / customers.length) * 100).toFixed(1)) : 0,
+      totalNotificationsSent,
+      totalNotificationsFailed,
+      recentLogs: logs.slice(0, 10)
+    };
+  }
+
+  // ==========================================
+  // DASHBOARD STATS & KPIS
+  // ==========================================
+  getDashboardStats(): DashboardStats {
+    const issues = this.data.issues || [];
+    const customers = this.data.customers || [];
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+
+    const totalIssues = issues.length;
+    const newIssues = issues.filter(i => i.status === 'NEW').length;
+    const inProgress = issues.filter(i => i.status === 'IN_PROGRESS' || i.status === 'ASSIGNED').length;
+    const waitingForSpecialist = issues.filter(i => i.status === 'ASSIGNED' || i.status === 'ANALYSIS').length;
+    const solutionReady = issues.filter(i => i.stage === 'STAGE_2_RESOLVED' || i.status === 'SOLUTION_READY').length;
+    const waitingForCustomer = issues.filter(i => i.stage === 'STAGE_3_DISPATCHED').length;
+    const closedIssues = issues.filter(i => i.status === 'CLOSED').length;
+    const reopenedIssues = issues.filter(i => i.reopenCount > 0).length;
+
+    const overdueTasks = issues.filter(i => {
+      if (i.status === 'CLOSED' || !i.dueDate) return false;
+      return new Date(i.dueDate) < now;
+    }).length;
+
+    const stagesCount = {
+      stage1: issues.filter(i => i.stage === 'STAGE_1_ACCEPTED').length,
+      stage2: issues.filter(i => i.stage === 'STAGE_2_RESOLVED').length,
+      stage3: issues.filter(i => i.stage === 'STAGE_3_DISPATCHED').length,
+      stage4: issues.filter(i => i.stage === 'STAGE_4_CONFIRMED').length
+    };
+
+    const totalCustomers = customers.length;
+    const activeCustomers = customers.filter(c => c.isActive).length;
+    const telegramLinkedCustomers = customers.filter(c => !!c.telegramChatId).length;
+    const todayIssues = issues.filter(i => i.reportedAt && i.reportedAt.startsWith(todayStr)).length;
+
+    const regionReports = this.getRegionReports();
+    const topRegions = regionReports.slice(0, 5).map(r => ({
+      regionId: r.regionId,
+      regionName: r.regionName,
+      count: r.totalIssues
+    }));
+
+    const productReports = this.getProductReports();
+    const productDistribution = productReports.map(p => ({
+      productId: p.productId,
+      productName: p.productName,
+      count: p.totalIssues
+    }));
+
+    const tgAnalytics = this.getCustomerTelegramAnalytics();
+
+    return {
+      totalIssues,
+      newIssues,
+      inProgress,
+      waitingForSpecialist,
+      waitingForDeveloper: waitingForSpecialist,
+      solutionReady,
+      waitingForCustomer,
+      overdueTasks,
+      closedIssues,
+      reopenedIssues,
+      stagesCount,
+      totalCustomers,
+      activeCustomers,
+      telegramLinkedCustomers,
+      todayIssues,
+      topRegions,
+      productDistribution,
+      telegramStats: {
+        linkedCount: tgAnalytics.linkedCount,
+        unlinkedCount: tgAnalytics.unlinkedCount,
+        totalNotificationsSent: tgAnalytics.totalNotificationsSent,
+        totalNotificationsFailed: tgAnalytics.totalNotificationsFailed
+      }
+    };
+  }
+
   getSpecialistKPIs(): SpecialistKPI[] {
     const specialists = this.data.users.filter(u => u.role === 'MUTAXASSIS' || (u.role as string) === 'DEVELOPER');
     const issues = this.data.issues || [];
 
-    return specialists.map(spec => {
-      const specCycles: IssueWorkCycle[] = [];
-      let assignedCount = 0;
-      let completedCount = 0;
-      let inProgressCount = 0;
-      let reopenedCount = 0;
-      let totalActiveSeconds = 0;
-      let onTimeCycles = 0;
+    return specialists.map(sp => {
+      const spIssues = issues.filter(i => i.current_specialist_id === sp.id || i.assignedDevId === sp.id);
+      const assignedCount = spIssues.length;
+      const completedCount = spIssues.filter(i => i.stage === 'STAGE_2_RESOLVED' || i.stage === 'STAGE_3_DISPATCHED' || i.stage === 'STAGE_4_CONFIRMED').length;
+      const inProgressCount = spIssues.filter(i => i.status === 'IN_PROGRESS').length;
+      const reopenedCount = spIssues.reduce((sum, i) => sum + (i.reopenCount || 0), 0);
 
-      issues.forEach(iss => {
-        const hasSpec = iss.current_specialist_id === spec.id;
-        const cycles = (iss.cycles || []).filter(c => c.specialistId === spec.id);
-        
-        if (hasSpec) assignedCount++;
-        if (hasSpec && iss.status === 'IN_PROGRESS') inProgressCount++;
-        if (hasSpec && iss.status === 'CLOSED') completedCount++;
+      let totalResolutionSec = 0;
+      let resolvedCount = 0;
+      let onTimeCount = 0;
 
-        cycles.forEach(c => {
-          specCycles.push(c);
-          if (c.solutionReadyAt) {
-            totalActiveSeconds += c.activeSeconds || 0;
-            if ((c.activeSeconds || 0) <= 86400) {
-              onTimeCycles++;
-            }
+      spIssues.forEach(i => {
+        if (i.resolvedAt && i.reportedAt) {
+          const diff = Math.max(0, Math.floor((new Date(i.resolvedAt).getTime() - new Date(i.reportedAt).getTime()) / 1000));
+          totalResolutionSec += diff;
+          resolvedCount++;
+
+          if (i.dueDate && new Date(i.resolvedAt) <= new Date(i.dueDate)) {
+            onTimeCount++;
+          } else if (!i.dueDate) {
+            onTimeCount++;
           }
-          if (c.cycleNumber > 1 && c.returnReason) {
-            reopenedCount++;
-          }
-        });
+        }
       });
 
-      const finishedCycles = specCycles.filter(c => c.solutionReadyAt).length;
-      const averageResolutionSeconds = finishedCycles > 0 ? Math.round(totalActiveSeconds / finishedCycles) : 0;
-      const onTimePercentage = finishedCycles > 0 ? Math.round((onTimeCycles / finishedCycles) * 100) : 100;
-      const totalCycles = specCycles.length;
-      const returnRatePercentage = totalCycles > 0 ? Math.round((reopenedCount / totalCycles) * 100) : 0;
+      const averageResolutionSeconds = resolvedCount > 0 ? Math.round(totalResolutionSec / resolvedCount) : 0;
+      const onTimePercentage = resolvedCount > 0 ? Math.round((onTimeCount / resolvedCount) * 100) : 100;
+      const returnRatePercentage = assignedCount > 0 ? Math.min(100, Math.round((reopenedCount / assignedCount) * 100)) : 0;
 
       let kpiScore = 100;
       if (assignedCount > 0) {
-        const speedScore = averageResolutionSeconds > 0 ? Math.max(0, 100 - (averageResolutionSeconds / 3600) * 8) : 100;
+        const slaScore = onTimePercentage;
         const qualityScore = Math.max(0, 100 - returnRatePercentage * 2);
-        kpiScore = Math.min(100, Math.round(speedScore * 0.4 + qualityScore * 0.3 + onTimePercentage * 0.3));
+        const speedScore = averageResolutionSeconds > 0 ? Math.max(0, 100 - (averageResolutionSeconds / 3600) * 10) : 100;
+        kpiScore = Math.min(100, Math.round(slaScore * 0.40 + qualityScore * 0.35 + speedScore * 0.25));
       }
 
       return {
-        id: spec.id,
-        name: spec.name,
-        phone: spec.phone,
-        role: spec.role,
+        id: sp.id,
+        name: sp.name,
+        phone: sp.phone,
+        role: sp.role,
         assignedCount,
         completedCount,
         inProgressCount,
@@ -851,7 +1486,7 @@ class Database {
         averageResolutionSeconds,
         onTimePercentage,
         returnRatePercentage,
-        kpiScore: Math.max(30, kpiScore)
+        kpiScore: Math.max(50, kpiScore)
       };
     });
   }
@@ -912,7 +1547,6 @@ class Database {
     });
   }
 
-  // --- Reports Summary ---
   getReportSummary(period: 'daily' | 'weekly' | 'monthly'): SystemReportSummary {
     const issues = this.data.issues || [];
     const products = this.data.products;

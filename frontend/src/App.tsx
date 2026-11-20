@@ -205,6 +205,44 @@ export const App: React.FC = () => {
     if (res.ok) await fetchData();
   };
 
+  // Customer Management
+  const handleUpdateCustomer = async (id: string, updates: any) => {
+    const res = await fetch(`/api/customers/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (res.ok) await fetchData();
+  };
+
+  const handleDeleteCustomer = async (id: string) => {
+    const res = await fetch(`/api/customers/${id}`, { method: 'DELETE' });
+    if (res.ok) await fetchData();
+  };
+
+  // Attachments Management
+  const handleUploadAttachment = async (issueId: string, fileData: { originalName: string; mimeType: string; base64: string; size: number }) => {
+    const activeUser = users.find(u => u.role === currentRole) || users[0];
+    const res = await fetch(`/api/issues/${issueId}/attachments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...fileData,
+        uploadedById: activeUser?.id || 'usr_admin',
+        uploadedByName: activeUser?.name || 'Administrator',
+        uploadedByRole: currentRole
+      })
+    });
+    if (res.ok) await fetchData();
+  };
+
+  const handleDeleteAttachment = async (issueId: string, attachmentId: string) => {
+    const res = await fetch(`/api/issues/${issueId}/attachments/${attachmentId}`, {
+      method: 'DELETE'
+    });
+    if (res.ok) await fetchData();
+  };
+
   const unresolvedCount = issues.filter(i => i.status !== 'CLOSED' && i.status !== 'CANCELLED').length;
 
   return (
@@ -235,6 +273,7 @@ export const App: React.FC = () => {
               <DashboardView
                 stats={stats}
                 issues={issues}
+                customers={customers}
                 lang={lang}
                 onSelectIssue={(issue) => setSelectedIssue(issue)}
                 onNavigateToTab={(tab) => setCurrentTab(tab)}
@@ -284,6 +323,8 @@ export const App: React.FC = () => {
                 customers={customers}
                 products={products}
                 lang={lang}
+                currentUserRole={currentRole}
+                operators={users.filter(u => u.role === 'OPERATOR')}
                 onAddCustomer={async (c) => {
                   await fetch('/api/customers', {
                     method: 'POST',
@@ -292,6 +333,8 @@ export const App: React.FC = () => {
                   });
                   fetchData();
                 }}
+                onUpdateCustomer={handleUpdateCustomer}
+                onDeleteCustomer={handleDeleteCustomer}
               />
             )}
 
@@ -355,6 +398,8 @@ export const App: React.FC = () => {
           onConfirmClose={handleConfirmClose}
           onReopen={handleReopen}
           onAddComment={handleAddComment}
+          onUploadAttachment={handleUploadAttachment}
+          onDeleteAttachment={handleDeleteAttachment}
         />
       )}
 

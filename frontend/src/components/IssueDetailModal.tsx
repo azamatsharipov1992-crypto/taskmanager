@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Issue, StageId, UserRole } from '../types';
+import React, { useState, useRef } from 'react';
+import { Issue, StageId, UserRole, Attachment } from '../types';
 import { StageStepper } from './StageStepper';
-import { Language } from '../translations';
+import { Language, translations } from '../translations';
 import { 
   X, 
   Send, 
@@ -19,7 +19,21 @@ import {
   Play,
   ArrowRight,
   History,
-  MessageSquare
+  MessageSquare,
+  Paperclip,
+  FileText,
+  Image as ImageIcon,
+  Film,
+  Download,
+  Trash2,
+  UploadCloud,
+  Maximize2,
+  Building2,
+  MapPin,
+  Phone,
+  Check,
+  FileCode,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface IssueDetailModalProps {
@@ -35,6 +49,8 @@ interface IssueDetailModalProps {
   onConfirmClose: (issueId: string, closeData: { customerFeedback: string; customerRating: number }) => Promise<void>;
   onReopen: (issueId: string, reason: string) => Promise<void>;
   onAddComment: (issueId: string, content: string) => Promise<void>;
+  onUploadAttachment?: (issueId: string, fileData: { originalName: string; mimeType: string; base64: string; size: number }) => Promise<void>;
+  onDeleteAttachment?: (issueId: string, attachmentId: string) => Promise<void>;
 }
 
 export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
@@ -49,9 +65,12 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
   onDispatchToCustomer,
   onConfirmClose,
   onReopen,
-  onAddComment
+  onAddComment,
+  onUploadAttachment,
+  onDeleteAttachment
 }) => {
-  const [activeTab, setActiveTab] = useState<'workflow' | 'cycles' | 'comments'>('workflow');
+  const t = translations[lang];
+  const [activeTab, setActiveTab] = useState<'workflow' | 'attachments' | 'cycles' | 'comments'>('workflow');
   
   // Pause reason
   const [pauseReason, setPauseReason] = useState('');
@@ -77,6 +96,12 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
   // New comment input
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Lightbox & Attachment Upload
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isMutaxassis = currentRole === 'MUTAXASSIS' || (currentRole as string) === 'DEVELOPER';
   const isOperator = currentRole === 'OPERATOR';
@@ -180,6 +205,83 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
     }
   };
 
+  // Attachment upload handler
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+
+    // Max 25MB check
+    if (file.size > 25 * 1024 * 1024) {
+      setUploadError(lang === 'UZ' ? 'Fayl hajmi 25 MB dan oshmasligi kerak!' : 'Размер файла не должен превышать 25 МБ!');
+      return;
+    }
+
+    setUploadingAttachment(true);
+    setUploadError(null);
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64 = reader.result as string;
+        if (onUploadAttachment) {
+          await onUploadAttachment(issue.id, {
+            originalName: file.name,
+            mimeType: file.type || 'application/octet-stream',
+            base64,
+            size: file.size
+          });
+        } else {
+          // Direct fallback call to backend
+          await fetch(`/api/issues/${issue.id}/attachments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              originalName: file.name,
+              mimeType: file.type || 'application/octet-stream',
+              base64,
+              size: file.size
+            })
+          });
+        }
+      } catch (err: any) {
+        setUploadError(err.message || 'Fayl yuklashda xatolik yuz berdi');
+      } finally {
+        setUploadingAttachment(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+    reader.onerror = () => {
+      setUploadError('Faylni o‘qishda xatolik yuz berdi');
+      setUploadingAttachment(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    if (!window.confirm(lang === 'UZ' ? 'Ushbu faylni o‘chirishni tasdiqlaysizmi?' : 'Подтверждаете удаление файла?')) return;
+    try {
+      if (onDeleteAttachment) {
+        await onDeleteAttachment(issue.id, attachmentId);
+      } else {
+        await fetch(`/api/issues/${issue.id}/attachments/${attachmentId}`, { method: 'DELETE' });
+      }
+    } catch (err) {
+      console.error('Delete attachment error:', err);
+    }
+  };
+
+  const getFileIcon = (mimeType: string, cat?: string) => {
+    if (mimeType.startsWith('image/') || cat === 'IMAGE') return <ImageIcon className="w-5 h-5 text-hicyan" />;
+    if (mimeType.startsWith('video/') || cat === 'VIDEO') return <Film className="w-5 h-5 text-purple-500" />;
+    if (mimeType.includes('pdf')) return <FileText className="w-5 h-5 text-red-500" />;
+    if (mimeType.includes('sheet') || mimeType.includes('excel') || mimeType.includes('csv')) return <FileSpreadsheet className="w-5 h-5 text-emerald-500" />;
+    if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('tar')) return <FileCode className="w-5 h-5 text-amber-500" />;
+    return <Paperclip className="w-5 h-5 text-slate-400" />;
+  };
+
+  const attachmentsList = issue.attachments || [];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
@@ -197,14 +299,14 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
               }`}>
                 {issue.priority}
               </span>
-              <span className="text-xs text-slate-400 font-medium">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 {issue.productName} ({issue.moduleName})
               </span>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -218,6 +320,69 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
           <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
             {issue.description}
           </p>
+
+          {/* CUSTOMER DIRECTORY SNAPSHOT INFO CARD */}
+          <div className="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div>
+              <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block flex items-center gap-1">
+                <Building2 className="w-3 h-3 text-hicyan" />
+                Mijoz korxonasi
+              </span>
+              <span className="font-bold text-slate-900 dark:text-white truncate block">
+                {issue.customerName}
+              </span>
+              {issue.customerInn && (
+                <span className="font-mono text-[11px] text-hicyan-dark dark:text-hicyan-neon font-bold">
+                  STIR: {issue.customerInn}
+                </span>
+              )}
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-emerald-500" />
+                Hudud (Viloyat)
+              </span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">
+                {issue.regionName || 'Aniqlanmagan'}
+              </span>
+              {issue.districtName && (
+                <span className="text-[11px] text-slate-500 block truncate">
+                  {issue.districtName}
+                </span>
+              )}
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block flex items-center gap-1">
+                <User className="w-3 h-3 text-purple-500" />
+                Aloqa shaxsi
+              </span>
+              <span className="font-bold text-slate-800 dark:text-slate-200 truncate block">
+                {issue.contactPersonSnapshot || 'Mijoz vakili'}
+              </span>
+              <span className="text-[11px] text-slate-500 font-mono block">
+                {issue.contactPhoneSnapshot || issue.customerPhone || 'Telefon yo‘q'}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block flex items-center gap-1">
+                <Paperclip className="w-3 h-3 text-amber-500" />
+                Media / Fayllar
+              </span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">
+                {attachmentsList.length} ta biriktirilgan
+              </span>
+              <button
+                type="button"
+                onClick={() => setActiveTab('attachments')}
+                className="text-[11px] text-hicyan font-bold hover:underline block cursor-pointer"
+              >
+                Ko‘rish va yuklash →
+              </button>
+            </div>
+          </div>
 
           {/* PERMANENT OPERATOR LOCK BANNER */}
           <div className="mt-3 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -242,10 +407,10 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
         </div>
 
         {/* Tab Controls */}
-        <div className="px-6 border-b border-slate-200 dark:border-slate-800 flex items-center gap-4 text-xs font-mono font-bold">
+        <div className="px-6 border-b border-slate-200 dark:border-slate-800 flex items-center gap-4 text-xs font-mono font-bold overflow-x-auto">
           <button
             onClick={() => setActiveTab('workflow')}
-            className={`py-3 border-b-2 transition-all cursor-pointer ${
+            className={`py-3 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'workflow'
                 ? 'border-hicyan text-hicyan dark:text-hicyan-neon'
                 : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
@@ -253,9 +418,22 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
           >
             NAZORAT VA YECHIM JARAYONI
           </button>
+
+          <button
+            onClick={() => setActiveTab('attachments')}
+            className={`py-3 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'attachments'
+                ? 'border-hicyan text-hicyan dark:text-hicyan-neon'
+                : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            }`}
+          >
+            <Paperclip className="w-3.5 h-3.5" />
+            <span>BIRIKTIRILGAN FAYLLAR ({attachmentsList.length})</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('cycles')}
-            className={`py-3 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`py-3 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'cycles'
                 ? 'border-hicyan text-hicyan dark:text-hicyan-neon'
                 : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
@@ -264,9 +442,10 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
             <History className="w-3.5 h-3.5" />
             <span>ISH SIKLLARI ({issue.cycles?.length || 1})</span>
           </button>
+
           <button
             onClick={() => setActiveTab('comments')}
-            className={`py-3 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`py-3 border-b-2 transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'comments'
                 ? 'border-hicyan text-hicyan dark:text-hicyan-neon'
                 : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
@@ -296,7 +475,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                   </span>
                 </div>
                 <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                  <div>Mijoz: <b>{issue.customerName}</b> ({issue.customerPhone || 'Telefon kiritilmagan'})</div>
+                  <div>Mijoz: <b>{issue.customerName}</b> ({issue.contactPhoneSnapshot || issue.customerPhone || 'Telefon kiritilmagan'})</div>
                   <div>Qabul qilgan operator: <b>{issue.created_by_operator_name}</b></div>
                   <div>Mas'ul mutaxassis: <b>{issue.current_specialist_name || 'Biriktirilmagan'}</b></div>
                   <div>Holat: <b className="font-mono text-hicyan-dark dark:text-hicyan-neon">{issue.status}</b></div>
@@ -423,13 +602,24 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                           </div>
                         </div>
 
-                        <button
-                          type="submit"
-                          disabled={loading || !solutionNote.trim()}
-                          className="px-4 py-2 bg-himint hover:bg-himint-dark text-white rounded-lg text-xs font-bold shadow-md shadow-himint/20 cursor-pointer disabled:opacity-50"
-                        >
-                          {loading ? 'Yuborilmoqda...' : 'Yechimni operatorga topshirish'}
-                        </button>
+                        <div className="flex items-center gap-3 pt-2">
+                          <button
+                            type="submit"
+                            disabled={loading || !solutionNote.trim()}
+                            className="px-4 py-2 bg-himint hover:bg-himint-dark text-white rounded-lg text-xs font-bold shadow-md shadow-himint/20 cursor-pointer disabled:opacity-50"
+                          >
+                            {loading ? 'Yuborilmoqda...' : 'Yechimni operatorga topshirish'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('attachments')}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium cursor-pointer"
+                          >
+                            <Paperclip className="w-3.5 h-3.5 text-hicyan" />
+                            <span>Yechim screenshotini biriktirish</span>
+                          </button>
+                        </div>
                       </form>
                     )}
                   </div>
@@ -626,14 +816,14 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                           <button
                             type="button"
                             onClick={() => setShowReopenForm(false)}
-                            className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 rounded text-xs"
+                            className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 rounded text-xs cursor-pointer"
                           >
                             Bekor qilish
                           </button>
                           <button
                             type="submit"
                             disabled={loading || !reopenReason.trim()}
-                            className="px-4 py-1.5 bg-red-600 text-white rounded text-xs font-bold"
+                            className="px-4 py-1.5 bg-red-600 text-white rounded text-xs font-bold cursor-pointer"
                           >
                             Mutaxassisga qaytarish (Yangi sikl)
                           </button>
@@ -645,6 +835,164 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                   <p className="text-xs text-slate-400">Avvalgi bosqichlar tugallanishi kutilmoqda.</p>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* TAB: BIRIKTIRILGAN MEDIA VA HUJJATLAR (ATTACHMENTS) */}
+          {activeTab === 'attachments' && (
+            <div className="space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white font-mono uppercase flex items-center gap-2">
+                    <Paperclip className="w-4 h-4 text-hicyan" />
+                    <span>Murojaatga biriktirilgan fayllar ({attachmentsList.length} ta)</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Skrinshotlar, video yozuvlar, xatolik loglari, PDF va Excel hujjatlari
+                  </p>
+                </div>
+
+                <div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                    accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingAttachment}
+                    className="flex items-center gap-2 px-4 py-2 bg-hicyan hover:bg-hicyan-dark text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <UploadCloud className="w-4 h-4" />
+                    <span>{uploadingAttachment ? 'Yuklanmoqda...' : 'Yangi fayl qo‘shish'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {uploadError && (
+                <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-600 dark:text-red-300 font-semibold flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+
+              {attachmentsList.length === 0 ? (
+                <div className="p-12 text-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
+                  <Paperclip className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                    Hozircha biriktirilgan fayllar yo‘q
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                    Operator yoki mutaxassis muammoni tavsiflash yoki yechimini ko‘rsatish uchun rasm, video va hujjatlar yuklashi mumkin.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <UploadCloud className="w-4 h-4 text-hicyan" />
+                    <span>Fayl tanlash</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  {attachmentsList.map((att) => {
+                    const isImg = att.fileCategory === 'IMAGE' || att.mimeType.startsWith('image/');
+                    const isVid = att.fileCategory === 'VIDEO' || att.mimeType.startsWith('video/');
+                    const imgSrc = att.dataUrl || att.url || `/api/attachments/${att.id}`;
+
+                    return (
+                      <div
+                        key={att.id}
+                        className="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
+                      >
+                        {/* Media Preview or Icon Header */}
+                        {isImg ? (
+                          <div 
+                            className="relative h-36 bg-slate-100 dark:bg-slate-900 cursor-pointer overflow-hidden group/img"
+                            onClick={() => setLightboxImage(imgSrc)}
+                          >
+                            <img
+                              src={imgSrc}
+                              alt={att.originalName}
+                              className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white">
+                              <Maximize2 className="w-5 h-5" />
+                              <span className="text-xs font-bold">Kattalashtirish</span>
+                            </div>
+                            <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-slate-900/70 text-white font-mono text-[10px] font-bold">
+                              {att.sizeFormatted || 'IMG'}
+                            </span>
+                          </div>
+                        ) : isVid ? (
+                          <div className="h-36 bg-slate-900 flex flex-col items-center justify-center text-slate-300 p-4 relative">
+                            <Film className="w-10 h-10 text-purple-400 mb-2" />
+                            <span className="text-xs font-bold font-mono">VIDEO FAYL</span>
+                            <span className="text-[10px] text-slate-400 mt-1">{att.sizeFormatted}</span>
+                            <a
+                              href={`/api/attachments/${att.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="absolute inset-0 flex items-center justify-center bg-slate-950/60 opacity-0 hover:opacity-100 transition-opacity text-white text-xs font-bold gap-1"
+                            >
+                              <Play className="w-4 h-4 fill-white" />
+                              Ijro etish
+                            </a>
+                          </div>
+                        ) : (
+                          <div className="h-28 bg-slate-50 dark:bg-slate-900/60 flex items-center justify-center p-4 border-b border-slate-100 dark:border-slate-800">
+                            <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm">
+                              {getFileIcon(att.mimeType, att.fileCategory)}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* File Details */}
+                        <div className="p-3.5 flex-1 flex flex-col justify-between">
+                          <div>
+                            <div className="font-bold text-xs text-slate-900 dark:text-white truncate" title={att.originalName}>
+                              {att.originalName}
+                            </div>
+                            <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between font-mono">
+                              <span>{att.sizeFormatted}</span>
+                              <span>{att.uploadedAt ? new Date(att.uploadedAt).toLocaleDateString('uz-UZ') : ''}</span>
+                            </div>
+                            <div className="text-[10px] text-slate-500 mt-0.5 truncate">
+                              Yuklovchi: {att.uploadedBy || 'Tizim foydalanuvchisi'}
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                            <a
+                              href={`/api/attachments/${att.id}/download`}
+                              download={att.originalName}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              <span>Yuklab olish</span>
+                            </a>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAttachment(att.id)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                              title="O‘chirish"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
@@ -739,7 +1087,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                 <button
                   type="submit"
                   disabled={loading || !newComment.trim()}
-                  className="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-xs font-bold"
+                  className="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-xs font-bold cursor-pointer"
                 >
                   Yuborish
                 </button>
@@ -758,6 +1106,27 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* LIGHTBOX MODAL FOR IMAGES */}
+      {lightboxImage && (
+        <div 
+          className="fixed inset-0 z-70 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => setLightboxImage(null)}
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img
+            src={lightboxImage}
+            alt="Enlarged preview"
+            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
 
       {/* PAUSE MODAL */}
       {showPauseModal && (
@@ -782,14 +1151,14 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPauseModal(false)}
-                  className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-xs rounded font-bold"
+                  className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-xs rounded font-bold cursor-pointer"
                 >
                   Bekor qilish
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-1.5 bg-amber-500 text-white text-xs font-bold rounded"
+                  className="px-4 py-1.5 bg-amber-500 text-white text-xs font-bold rounded cursor-pointer"
                 >
                   Kutishga qo'yish
                 </button>

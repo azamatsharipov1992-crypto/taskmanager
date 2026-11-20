@@ -1,6 +1,120 @@
 {
-  "users": [],
-  "customers": [],
+  "users": [
+    {
+      "id": "usr_1795149960376",
+      "name": "Sheribov Zafarbek",
+      "phone": "+998 972217787",
+      "role": "MANAGER",
+      "login": "pc_urg_zafarbek",
+      "email": "pc_urg_zafarbek@taskcontrol.uz",
+      "password": "123456",
+      "telegramUsername": "ziko778",
+      "telegramChatId": "-596526184",
+      "telegramLinkCode": "TC-MAN-5596",
+      "telegramLinkedAt": "2026-11-20T04:46:00.376Z",
+      "isActive": true,
+      "createdAt": "2026-11-20T04:46:00.376Z"
+    },
+    {
+      "id": "usr_1795150089679",
+      "name": "Farrux Bakpolatov",
+      "phone": "+998 993185050",
+      "role": "OPERATOR",
+      "login": "pc_urg_farrux",
+      "email": "pc_urg_farrux@taskcontrol.uz",
+      "password": "123456",
+      "telegramUsername": "Farrux9496",
+      "telegramChatId": "-596526184",
+      "telegramLinkCode": "TC-OPE-6118",
+      "telegramLinkedAt": "2026-11-20T04:48:09.680Z",
+      "isActive": true,
+      "createdAt": "2026-11-20T04:48:09.680Z"
+    },
+    {
+      "id": "usr_1795150217294",
+      "name": "Narzullayev Akbar",
+      "phone": "+998 339115553",
+      "role": "SUPER_ADMIN",
+      "login": "pc_sam_akbar",
+      "email": "pc_sam_akbar@taskcontrol.uz",
+      "password": "123456",
+      "telegramUsername": "ansorkhon",
+      "telegramChatId": "-802699614",
+      "telegramLinkCode": "TC-SUP-9683",
+      "telegramLinkedAt": "2026-11-20T04:50:17.294Z",
+      "isActive": true,
+      "createdAt": "2026-11-20T04:50:17.294Z"
+    }
+  ],
+  "customers": [
+    {
+      "companyName": "Smart kassa MCHJ",
+      "contactPerson": "Azamat Sharipov",
+      "phone": "+998995605500",
+      "telegramUsername": "@creat1ve_man2",
+      "address": "Xorazm Urganch",
+      "notes": "",
+      "productIds": [
+        "prod_poscode",
+        "prod_restoplus"
+      ],
+      "id": "cust_1795149712524",
+      "createdAt": "2026-11-20T04:41:52.524Z",
+      "inn": "300000001",
+      "companyStatus": "FAOL",
+      "legalAddress": "Xorazm Urganch",
+      "regionId": "reg_tashkent_city",
+      "regionName": "Toshkent shahri",
+      "primaryPhone": "+998995605500",
+      "preferredLanguage": "UZ",
+      "dataSource": "MANUAL",
+      "notificationConsent": true,
+      "products": [
+        {
+          "id": "cp_1795151834836_prod_poscode",
+          "productId": "prod_poscode",
+          "productName": "POSCODE",
+          "isActive": true
+        },
+        {
+          "id": "cp_1795151834836_prod_restoplus",
+          "productId": "prod_restoplus",
+          "productName": "RESTOPLUS",
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "id": "cust_1795151848918",
+      "inn": "302845112",
+      "companyName": "\"UNIVERSAL SAVDO BIZNES\" MCHJ",
+      "companyStatus": "FAOL",
+      "legalAddress": "Toshkent shahri, O‘zbekiston",
+      "regionId": "reg_tashkent_city",
+      "regionName": "Toshkent shahri",
+      "primaryPhone": "+998901234567",
+      "contactPerson": "Rustam Karimov",
+      "preferredLanguage": "UZ",
+      "notificationConsent": true,
+      "dataSource": "MANUAL",
+      "sourceLastCheckedAt": "2026-11-20T05:17:28.918Z",
+      "isActive": true,
+      "productIds": [
+        "prod_poscode"
+      ],
+      "products": [
+        {
+          "id": "cp_1795151848918_prod_poscode",
+          "productId": "prod_poscode",
+          "productName": "POSCODE",
+          "isActive": true
+        }
+      ],
+      "createdAt": "2026-11-20T05:17:28.918Z",
+      "updatedAt": "2026-11-20T05:17:28.918Z",
+      "issuesCount": 0
+    }
+  ],
   "products": [
     {
       "id": "prod_poscode",
@@ -83,8 +197,227 @@
       ]
     }
   ],
-  "issues": [],
-  "reminderLogs": [],
+  "issues": [
+    {
+      "id": "iss_1795150340724",
+      "code": "TC-2026-000001",
+      "title": "Sotilgan mahsulotlar ombordan kamaymayapdi",
+      "description": "Sotilgan mahsulotlar ombordan kamaymayapdi",
+      "customerId": "cust_1795149712524",
+      "customerName": "Smart kassa MCHJ",
+      "customerPhone": "+998995605500",
+      "productId": "prod_poscode",
+      "productName": "POSCODE",
+      "moduleId": "mod_pos_ombor",
+      "moduleName": "Ombor va Qoldiqlar",
+      "priority": "HIGH",
+      "status": "CLOSED",
+      "stage": "STAGE_4_CONFIRMED",
+      "created_by_operator_id": "usr_1795150089679",
+      "created_by_operator_name": "Farrux Bakpolatov",
+      "current_specialist_id": "usr_1795150217294",
+      "current_specialist_name": "Narzullayev Akbar",
+      "currentCycleNumber": 1,
+      "reopenCount": 0,
+      "reportedAt": "2026-11-20T04:52:20.724Z",
+      "stage1CompletedAt": "2026-11-20T04:52:20.724Z",
+      "dueDate": "2026-11-22T00:00:00.000Z",
+      "reminderCount": 1,
+      "cycles": [
+        {
+          "id": "cyc_1795150340724_1",
+          "cycleNumber": 1,
+          "specialistId": "usr_1795150217294",
+          "specialistName": "Narzullayev Akbar",
+          "assignedAt": "2026-11-20T04:52:20.724Z",
+          "waitingSeconds": 0,
+          "activeSeconds": 362,
+          "totalSeconds": 362,
+          "acceptedAt": "2026-11-20T04:53:41.871Z",
+          "startedAt": "2026-11-20T04:53:41.871Z",
+          "solutionReadyAt": "2026-11-20T04:59:44.414Z",
+          "solutionNote": "mijozda ombor rejimi yoqilmaganligi uchun mahsulotlar hisobi yurimayotgan ekan, tarif o'zgartirilib Ombor rejimi yoqildi. Endilikda muammo kuzatilmaydi",
+          "returnedToOperatorAt": "2026-11-20T04:59:44.414Z"
+        }
+      ],
+      "attachments": [],
+      "comments": [
+        {
+          "id": "com_1795150340724",
+          "issueId": "iss_1795150340724",
+          "authorId": "usr_1795150089679",
+          "authorName": "Farrux Bakpolatov",
+          "authorRole": "OPERATOR",
+          "content": "Murojaat operator tomonidan qabul qilindi va tizimga kiritildi. Mas'ul mutaxassis: Narzullayev Akbar",
+          "createdAt": "2026-11-20T04:52:20.724Z"
+        },
+        {
+          "id": "com_1795150421871",
+          "issueId": "iss_1795150340724",
+          "authorId": "usr_spec1",
+          "authorName": "Narzullayev Akbar",
+          "authorRole": "MUTAXASSIS",
+          "content": "Vazifa mutaxassis tomonidan qabul qilindi va ish boshlandi.",
+          "createdAt": "2026-11-20T04:53:41.871Z"
+        },
+        {
+          "id": "com_1795150784414",
+          "issueId": "iss_1795150340724",
+          "authorId": "usr_spec1",
+          "authorName": "Narzullayev Akbar",
+          "authorRole": "MUTAXASSIS",
+          "content": "Mas'ul mutaxassis yechimni taqdim etdi va qabul qilgan operator (Farrux Bakpolatov) ga yo'naltirdi. Izoh: mijozda ombor rejimi yoqilmaganligi uchun mahsulotlar hisobi yurimayotgan ekan, tarif o'zgartirilib Ombor rejimi yoqildi. Endilikda muammo kuzatilmaydi",
+          "stageChange": {
+            "from": "STAGE_1_ACCEPTED",
+            "to": "STAGE_2_RESOLVED"
+          },
+          "createdAt": "2026-11-20T04:59:44.414Z"
+        },
+        {
+          "id": "com_1795150836793",
+          "issueId": "iss_1795150340724",
+          "authorId": "usr_1795150089679",
+          "authorName": "Farrux Bakpolatov",
+          "authorRole": "OPERATOR",
+          "content": "Yechim mijozga yetkazildi (TELEGRAM). Izoh: Mijozga telegram orqali habar beildi. Mijoz tasdig'i kutilmoqda.",
+          "stageChange": {
+            "from": "STAGE_2_RESOLVED",
+            "to": "STAGE_3_DISPATCHED"
+          },
+          "createdAt": "2026-11-20T05:00:36.792Z"
+        },
+        {
+          "id": "com_1795150846843",
+          "issueId": "iss_1795150340724",
+          "authorId": "usr_1795150089679",
+          "authorName": "Farrux Bakpolatov",
+          "authorRole": "OPERATOR",
+          "content": "Mijoz yechimni to'liq tasdiqladi. Baho: 5 / 5 yulduz. Murojaat muvaffaqiyatli yopildi.",
+          "stageChange": {
+            "from": "STAGE_3_DISPATCHED",
+            "to": "STAGE_4_CONFIRMED"
+          },
+          "createdAt": "2026-11-20T05:00:46.843Z"
+        }
+      ],
+      "updatedAt": "2026-11-20T05:00:46.843Z",
+      "resolvedAt": "2026-11-20T04:59:44.414Z",
+      "solutionNote": "mijozda ombor rejimi yoqilmaganligi uchun mahsulotlar hisobi yurimayotgan ekan, tarif o'zgartirilib Ombor rejimi yoqildi. Endilikda muammo kuzatilmaydi",
+      "lastReminderSentAt": "2026-11-20T05:00:30.333Z",
+      "dispatchedAt": "2026-11-20T05:00:36.792Z",
+      "dispatchedById": "usr_1795150089679",
+      "dispatchedByName": "Farrux Bakpolatov",
+      "dispatchMethod": "TELEGRAM",
+      "dispatchNote": "Mijozga telegram orqali habar beildi",
+      "closedAt": "2026-11-20T05:00:46.843Z",
+      "closedById": "usr_1795150089679",
+      "closedByName": "Farrux Bakpolatov",
+      "customerFeedback": "Mijoz tekshirib ko'rdi va muammo bartaraf etilganini tasdiqladi.",
+      "customerRating": 5,
+      "regionId": "reg_tashkent_city",
+      "regionName": "Toshkent shahri",
+      "customerInn": "300000001"
+    },
+    {
+      "id": "iss_1795151879776",
+      "code": "TC-2026-000002",
+      "title": "Kassada chek chop etilmayapti",
+      "description": "504 xatolik berdi",
+      "customerId": "cust_1795151848918",
+      "customerName": "\"UNIVERSAL SAVDO BIZNES\" MCHJ",
+      "customerInn": "302845112",
+      "customerPhone": "+998901234567",
+      "contactPhoneSnapshot": "+998901234567",
+      "contactPersonSnapshot": "Rustam Karimov",
+      "regionId": "reg_tashkent_city",
+      "regionName": "Toshkent shahri",
+      "productId": "prod_poscode",
+      "productName": "POSCODE",
+      "moduleId": "mod_pos_kassa",
+      "moduleName": "Kassa va Savdo",
+      "priority": "HIGH",
+      "status": "NEW",
+      "stage": "STAGE_1_ACCEPTED",
+      "created_by_operator_id": "usr_1795150089679",
+      "created_by_operator_name": "Farrux Bakpolatov",
+      "cycles": [],
+      "currentCycleNumber": 0,
+      "reopenCount": 0,
+      "reportedAt": "2026-11-20T05:17:59.776Z",
+      "reminderCount": 0,
+      "attachments": [
+        {
+          "id": "att_1795151884747_804",
+          "issueId": "iss_1795151879776",
+          "name": "att_1795151884747_804_screenshot_error.png",
+          "originalName": "screenshot_error.png",
+          "mimeType": "image/png",
+          "size": 70,
+          "sizeFormatted": "0 KB",
+          "fileCategory": "IMAGE",
+          "storagePath": "C:\\Users\\Admin\\.gemini\\antigravity\\scratch\\task_control\\backend\\data\\attachments\\att_1795151884747_804_screenshot_error.png",
+          "url": "/api/attachments/att_1795151884747_804",
+          "uploadedAt": "2026-11-20T05:18:04.748Z",
+          "uploadedBy": "Farrux Bakpolatov"
+        }
+      ],
+      "comments": [
+        {
+          "id": "cmt_1795151879776",
+          "issueId": "iss_1795151879776",
+          "authorId": "usr_1795150089679",
+          "authorName": "Farrux Bakpolatov",
+          "authorRole": "OPERATOR",
+          "content": "Murojaat qabul qilindi va tizimda ro‘yxatdan o‘tkazildi. (Mijoz: \"UNIVERSAL SAVDO BIZNES\" MCHJ, Viloyat: Toshkent shahri)",
+          "stageChange": {
+            "from": "STAGE_1_ACCEPTED",
+            "to": "STAGE_1_ACCEPTED"
+          },
+          "createdAt": "2026-11-20T05:17:59.776Z"
+        }
+      ],
+      "updatedAt": "2026-11-20T05:17:59.776Z"
+    }
+  ],
+  "reminderLogs": [
+    {
+      "issueId": "iss_1795150340724",
+      "issueCode": "TC-2026-000001",
+      "issueTitle": "Sotilgan mahsulotlar ombordan kamaymayapdi",
+      "targetRole": "SUPER_ADMIN",
+      "targetRecipient": "Barcha xodimlar va Superadmin",
+      "stage": "STAGE_4_CONFIRMED",
+      "message": "🎉 <b>MUROJAAT MUVOFAQIYATLI YOPILDI!</b>\n\n📌 <b>Murojaat kodi:</b> <code>TC-2026-000001</code>\n🏢 <b>Mijoz:</b> Smart kassa MCHJ\n💻 <b>Dastur:</b> POSCODE (Ombor va Qoldiqlar)\n👨‍💻 <b>Mutaxassis:</b> Narzullayev Akbar\n👤 <b>Operator:</b> Farrux Bakpolatov\n🌟 <b>Mijoz bahosi:</b> ⭐️⭐️⭐️⭐️⭐️ (5/5)\n💬 <b>Mijoz fikri:</b> <i>\"Mijoz tekshirib ko'rdi va muammo bartaraf etilganini tasdiqladi.\"</i>\n\n✅ <i>4-bosqich to'liq yakunlandi va mijoz tasdig'i olindi.</i>",
+      "status": "SENT",
+      "id": "rem_1795150846843",
+      "sentAt": "2026-11-20T05:00:46.843Z"
+    },
+    {
+      "issueId": "iss_1795150340724",
+      "issueCode": "TC-2026-000001",
+      "issueTitle": "Sotilgan mahsulotlar ombordan kamaymayapdi",
+      "targetRole": "OPERATOR",
+      "targetRecipient": "Operator (Farrux Bakpolatov) & Admin",
+      "stage": "STAGE_2_RESOLVED",
+      "message": "⚠️ <b>TASK CONTROL: YECHIM MIJOZGA YETKAZILMAGAN!</b>\n\n📌 <b>Murojaat:</b> <code>TC-2026-000001</code> — Sotilgan mahsulotlar ombordan kamaymayapdi\n🏢 <b>Mijoz:</b> Smart kassa MCHJ (+998995605500)\n👨‍💻 <b>Mutaxassis:</b> Narzullayev Akbar\n👤 <b>Mas'ul operator:</b> Farrux Bakpolatov\n\n❗️ <i>Mutaxassis yechimni topshirgan, biroq operator hali mijoz bilan bog'lanmadi. Iltimos, mijozga yechimni yetkazing!</i>",
+      "status": "SENT",
+      "id": "rem_1795150829587",
+      "sentAt": "2026-11-20T05:00:29.587Z"
+    },
+    {
+      "issueId": "iss_1795150340724",
+      "issueCode": "TC-2026-000001",
+      "issueTitle": "Sotilgan mahsulotlar ombordan kamaymayapdi",
+      "targetRole": "MUTAXASSIS",
+      "targetRecipient": "Narzullayev Akbar (ansorkhon)",
+      "stage": "STAGE_1_ACCEPTED",
+      "message": "🔔 <b>YANGI VAZIFA BIRIKTIRILDI!</b>\n\n📌 <b>Murojaat kodi:</b> <code>TC-2026-000001</code>\n⚡️ <b>Muhimligi:</b> <b>HIGH</b>\n🏢 <b>Mijoz:</b> Smart kassa MCHJ\n💻 <b>Dastur:</b> POSCODE — Ombor va Qoldiqlar\n📝 <b>Muammo:</b> Sotilgan mahsulotlar ombordan kamaymayapdi\n\n👤 <b>Qabul qilgan operator:</b> Farrux Bakpolatov\n⏰ <b>Muddati:</b> 22/11/2026, 05:00:00\n\n👉 <i>Iltimos, TASK CONTROL tizimiga kirib vazifani qabul qiling va bajarishni boshlang!</i>",
+      "status": "SENT",
+      "id": "rem_1795150340837",
+      "sentAt": "2026-11-20T04:52:20.837Z"
+    }
+  ],
+  "customerNotificationLogs": [],
   "telegramRecipients": [
     {
       "id": "recip_admin_main",
@@ -94,6 +427,24 @@
       "username": "shohrux_admin",
       "isActive": true,
       "createdAt": "2026-11-17T09:00:00Z"
+    },
+    {
+      "name": "Narzullayev Akbar",
+      "role": "Dasturchi",
+      "chatId": "802699614",
+      "username": "ansorkhon",
+      "isActive": true,
+      "id": "rec_1795151149411",
+      "createdAt": "2026-11-20T05:05:49.411Z"
+    },
+    {
+      "name": "Zafarbek Sharipov",
+      "role": "Dasturchi",
+      "chatId": "596526184",
+      "username": "ziko778",
+      "isActive": true,
+      "id": "rec_1795151246795",
+      "createdAt": "2026-11-20T05:07:26.795Z"
     }
   ]
 }

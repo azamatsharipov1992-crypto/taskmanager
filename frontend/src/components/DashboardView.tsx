@@ -1,5 +1,5 @@
 import React from 'react';
-import { DashboardStats, Issue } from '../types';
+import { DashboardStats, Issue, Customer } from '../types';
 import { translations, Language } from '../translations';
 import { 
   AlertCircle, 
@@ -13,12 +13,19 @@ import {
   ArrowUpRight,
   Sparkles,
   BellRing,
-  Activity
+  Activity,
+  Building2,
+  Users,
+  MapPin,
+  Package,
+  TrendingUp,
+  Link as LinkIcon
 } from 'lucide-react';
 
 interface DashboardViewProps {
   stats: DashboardStats | null;
   issues: Issue[];
+  customers?: Customer[];
   lang: Language;
   onSelectIssue: (issue: Issue) => void;
   onNavigateToTab: (tab: any) => void;
@@ -27,6 +34,7 @@ interface DashboardViewProps {
 export const DashboardView: React.FC<DashboardViewProps> = ({
   stats,
   issues,
+  customers = [],
   lang,
   onSelectIssue,
   onNavigateToTab
@@ -35,6 +43,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const pendingCustomerDispatch = issues.filter(i => i.stage === 'STAGE_2_RESOLVED' && i.status === 'SOLUTION_READY');
   const pendingCustomerConfirmation = issues.filter(i => i.stage === 'STAGE_3_DISPATCHED' && i.status === 'CUSTOMER_CONFIRM');
+
+  const totalIssuesCount = stats?.totalIssues || 0;
+  const maxProductCount = Math.max(...(stats?.productDistribution?.map(p => p.count) || [1]), 1);
 
   return (
     <div className="space-y-6">
@@ -46,7 +57,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               // TELEMETRY: REAL-TIME
             </span>
             <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
-              CLUSTER: NODE-1 // ASIA-TASHKENT
+              CLUSTER: NODE-1 // ASIA-TASHKENT (14 HUDUD)
             </span>
           </div>
 
@@ -55,89 +66,96 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </h1>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl font-medium">
             {lang === 'UZ' 
-              ? '4 bosqichli qat\'iy biznes qoidasi asosida mijoz murojaatlari va topshiriqlar monitoringi.' 
-              : 'Мониторинг обращений клиентов на основе 4-х этапного регламента.'}
+              ? 'Mijozlar hisobi, 14 ta hudud kesimidagi murojaatlar va Telegram xabarnomalar monitoringi.' 
+              : 'Учет клиентов, обращения в разрезе 14 регионов и мониторинг Telegram уведомлений.'}
           </p>
         </div>
 
-        <div className="flex items-center gap-3 font-mono text-xs">
+        <div className="flex flex-wrap items-center gap-2.5 font-mono text-xs">
           <button
-            onClick={() => onNavigateToTab('reminders')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors font-bold"
+            onClick={() => onNavigateToTab('customers')}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors font-bold cursor-pointer"
           >
-            <BellRing className="w-4 h-4 text-hiamber" />
-            <span>TELEGRAM BOT</span>
+            <Building2 className="w-4 h-4 text-hicyan" />
+            <span>MIJOZLAR BAZASI</span>
+          </button>
+          <button
+            onClick={() => onNavigateToTab('reports')}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors font-bold cursor-pointer"
+          >
+            <MapPin className="w-4 h-4 text-emerald-500" />
+            <span>VILOYATLAR</span>
           </button>
           <button
             onClick={() => onNavigateToTab('kanban')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-hicyan dark:hover:bg-hicyan-dark text-white rounded-xl transition-colors font-bold shadow-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-hicyan dark:hover:bg-hicyan-dark text-white rounded-xl transition-colors font-bold shadow-sm cursor-pointer"
           >
-            <span>KANBAN DOSKASI</span>
-            <ArrowUpRight className="w-4 h-4 text-hicyan dark:text-white" />
+            <span>KANBAN</span>
+            <ArrowUpRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* 6 Hi-Tech KPI Tiles */}
+      {/* 6 Hi-Tech Primary KPI Tiles (Incorporating Customer Metrics) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 font-mono">
-        {/* Total */}
+        {/* Total Issues */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm transition-colors">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5 text-xs font-bold">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1 text-xs font-bold">
             <span>TOTAL ISSUES</span>
             <Layers className="w-4 h-4 text-hicyan" />
           </div>
           <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats?.totalIssues || 0}</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-sans font-medium">Jami murojaatlar</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-sans font-medium">Jami murojaatlar</div>
         </div>
 
-        {/* Stage 1: In Progress (Cyan) */}
-        <div className="bg-hicyan-light/40 dark:bg-hicyan/10 border border-hicyan/30 dark:border-hicyan/30 p-4 rounded-2xl shadow-sm transition-colors">
-          <div className="flex items-center justify-between text-hicyan-dark dark:text-hicyan-neon mb-1.5 text-xs font-bold">
-            <span>STAGE 01: DEV</span>
+        {/* Today Issues */}
+        <div className="bg-hicyan-light/30 dark:bg-hicyan/10 border border-hicyan/30 p-4 rounded-2xl shadow-sm transition-colors">
+          <div className="flex items-center justify-between text-hicyan-dark dark:text-hicyan-neon mb-1 text-xs font-bold">
+            <span>TODAY</span>
             <Clock className="w-4 h-4 text-hicyan" />
           </div>
-          <div className="text-3xl font-black text-hicyan dark:text-hicyan-neon tracking-tight">{stats?.inProgress || 0}</div>
-          <div className="text-xs text-hicyan-dark dark:text-hicyan-neon mt-1.5 font-sans font-medium">Ish jarayonida</div>
+          <div className="text-3xl font-black text-hicyan-dark dark:text-hicyan-neon tracking-tight">{stats?.todayIssues || 0}</div>
+          <div className="text-[11px] text-hicyan-dark dark:text-hicyan-neon mt-1 font-sans font-medium">Bugungi yangi</div>
         </div>
 
-        {/* Stage 2: Solution Ready (Amber) */}
-        <div className="bg-hiamber-light/50 dark:bg-hiamber/10 border border-hiamber/40 dark:border-hiamber/30 p-4 rounded-2xl shadow-sm transition-colors">
-          <div className="flex items-center justify-between text-hiamber-dark dark:text-hiamber-neon mb-1.5 text-xs font-bold">
-            <span>STAGE 02: READY</span>
-            <CheckCircle2 className="w-4 h-4 text-hiamber" />
+        {/* Total Customers */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm transition-colors cursor-pointer hover:border-hicyan/50" onClick={() => onNavigateToTab('customers')}>
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1 text-xs font-bold">
+            <span>CUSTOMERS</span>
+            <Building2 className="w-4 h-4 text-purple-500" />
           </div>
-          <div className="text-3xl font-black text-hiamber dark:text-hiamber-neon tracking-tight">{stats?.solutionReady || 0}</div>
-          <div className="text-xs text-hiamber-dark dark:text-hiamber-neon mt-1.5 font-sans font-medium">Yechim berildi</div>
+          <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stats?.totalCustomers || 0}</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-sans font-medium">Jami korxonalar</div>
         </div>
 
-        {/* Stage 3: Waiting Confirmation (Amber) */}
-        <div className="bg-hiamber-light/30 dark:bg-hiamber/5 border border-hiamber/30 dark:border-hiamber/20 p-4 rounded-2xl shadow-sm transition-colors">
-          <div className="flex items-center justify-between text-hiamber-dark dark:text-hiamber-neon mb-1.5 text-xs font-bold">
-            <span>STAGE 03: CLIENT</span>
-            <UserCheck className="w-4 h-4 text-hiamber" />
+        {/* Active Customers */}
+        <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 p-4 rounded-2xl shadow-sm transition-colors cursor-pointer" onClick={() => onNavigateToTab('customers')}>
+          <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-300 mb-1 text-xs font-bold">
+            <span>ACTIVE CLIENTS</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-3xl font-black text-hiamber-dark dark:text-hiamber-neon tracking-tight">{stats?.waitingForCustomer || 0}</div>
-          <div className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 font-sans font-medium">Tasdiq kutilmoqda</div>
+          <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{stats?.activeCustomers || 0}</div>
+          <div className="text-[11px] text-emerald-700 dark:text-emerald-300 mt-1 font-sans font-medium">Faol foydalanuvchi</div>
         </div>
 
-        {/* Overdue (Amber alert) */}
-        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm transition-colors">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5 text-xs font-bold">
-            <span>OVERDUE</span>
-            <AlertCircle className="w-4 h-4 text-hiamber" />
+        {/* Telegram Linked */}
+        <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/40 p-4 rounded-2xl shadow-sm transition-colors cursor-pointer" onClick={() => onNavigateToTab('reports')}>
+          <div className="flex items-center justify-between text-blue-700 dark:text-blue-300 mb-1 text-xs font-bold">
+            <span>TG CONNECTED</span>
+            <BellRing className="w-4 h-4 text-blue-500" />
           </div>
-          <div className="text-3xl font-black text-hiamber dark:text-hiamber-neon tracking-tight">{stats?.overdueTasks || 0}</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-sans font-medium">Muddati o'tgan</div>
+          <div className="text-3xl font-black text-blue-600 dark:text-blue-400 tracking-tight">{stats?.telegramLinkedCustomers || 0}</div>
+          <div className="text-[11px] text-blue-700 dark:text-blue-300 mt-1 font-sans font-medium">Telegram ulangan</div>
         </div>
 
-        {/* Stage 4: Closed (Mint) */}
+        {/* Closed Issues */}
         <div className="bg-himint-light/40 dark:bg-himint/10 border border-himint/40 dark:border-himint/30 p-4 rounded-2xl shadow-sm transition-colors">
-          <div className="flex items-center justify-between text-himint-dark dark:text-himint-neon mb-1.5 text-xs font-bold">
+          <div className="flex items-center justify-between text-himint-dark dark:text-himint-neon mb-1 text-xs font-bold">
             <span>STAGE 04: CLOSED</span>
             <CheckCircle2 className="w-4 h-4 text-himint" />
           </div>
           <div className="text-3xl font-black text-himint dark:text-himint-neon tracking-tight">{stats?.closedIssues || 0}</div>
-          <div className="text-xs text-himint-dark dark:text-himint-neon mt-1.5 font-sans font-medium">Mijoz tasdiqlagan</div>
+          <div className="text-[11px] text-himint-dark dark:text-himint-neon mt-1 font-sans font-medium">Mijoz tasdiqlagan</div>
         </div>
       </div>
 
@@ -203,6 +221,101 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
+      {/* NEW WIDGETS: TOP REGIONS & SOFTWARE PRODUCTS BREAKDOWN */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Top Regions Widget */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm transition-colors">
+          <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-slate-100 dark:border-slate-800 font-mono text-xs">
+            <span className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-hicyan" />
+              <span>// TOP VILOYATLAR (MUROJAATLAR TAQSIMOTI)</span>
+            </span>
+            <button
+              onClick={() => onNavigateToTab('reports')}
+              className="text-hicyan hover:underline font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <span>14 HUDUD MATRITSASI</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="space-y-3 font-mono text-xs">
+            {stats?.topRegions && stats.topRegions.length > 0 ? (
+              stats.topRegions.slice(0, 5).map((reg) => {
+                const pct = totalIssuesCount > 0 ? Math.round((reg.count / totalIssuesCount) * 100) : 0;
+                return (
+                  <div key={reg.regionId} className="space-y-1">
+                    <div className="flex items-center justify-between text-slate-800 dark:text-slate-200">
+                      <span className="font-sans font-bold flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                        {reg.regionName}
+                      </span>
+                      <span className="font-bold">
+                        {reg.count} ta <span className="text-slate-400 font-normal">({pct}%)</span>
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className="bg-hicyan h-full rounded-full transition-all duration-300"
+                        style={{ width: `${Math.max(pct, reg.count > 0 ? 8 : 0)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-6 text-slate-400">Hududlar ma'lumotlari kutilmoqda</div>
+            )}
+          </div>
+        </div>
+
+        {/* Software Products Distribution Widget */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm transition-colors">
+          <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-slate-100 dark:border-slate-800 font-mono text-xs">
+            <span className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Package className="w-4 h-4 text-purple-500" />
+              <span>// DASTURIY MAHSULOTLAR KESIMIDA</span>
+            </span>
+            <button
+              onClick={() => onNavigateToTab('reports')}
+              className="text-hicyan hover:underline font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <span>HISOBOTNI KO‘RISH</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="space-y-3 font-mono text-xs">
+            {stats?.productDistribution && stats.productDistribution.length > 0 ? (
+              stats.productDistribution.map((prod) => {
+                const pct = totalIssuesCount > 0 ? Math.round((prod.count / totalIssuesCount) * 100) : 0;
+                return (
+                  <div key={prod.productId} className="space-y-1">
+                    <div className="flex items-center justify-between text-slate-800 dark:text-slate-200">
+                      <span className="font-sans font-bold flex items-center gap-1.5">
+                        <Package className="w-3.5 h-3.5 text-slate-400" />
+                        {prod.productName}
+                      </span>
+                      <span className="font-bold">
+                        {prod.count} ta <span className="text-slate-400 font-normal">({pct}%)</span>
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className="bg-purple-500 h-full rounded-full transition-all duration-300"
+                        style={{ width: `${Math.max(pct, prod.count > 0 ? 8 : 0)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-6 text-slate-400">Mahsulotlar ma'lumotlari kutilmoqda</div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Critical Stage 2 & Stage 3 Alert Panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Stage 2 Action Panel */}
@@ -239,7 +352,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="text-xs text-slate-500 dark:text-slate-400 font-sans mt-1 flex items-center gap-2">
                       <span>🏢 {iss.customerName}</span>
                       <span>•</span>
-                      <span>👨‍💻 {iss.assignedDevName}</span>
+                      <span>📍 {iss.regionName || 'Hudud'}</span>
+                      <span>•</span>
+                      <span>👨‍💻 {iss.current_specialist_name || iss.assignedDevName}</span>
                     </div>
                   </div>
                   <span className="text-xs text-hiamber font-bold group-hover:translate-x-1 transition-transform">
@@ -304,7 +419,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <span className="font-bold text-slate-900 dark:text-white text-sm">// RECENT INCIDENTS & LOGS</span>
           <button
             onClick={() => onNavigateToTab('issues')}
-            className="text-hicyan hover:underline font-bold flex items-center gap-1.5"
+            className="text-hicyan hover:underline font-bold flex items-center gap-1.5 cursor-pointer"
           >
             <span>BARCHASINI KO'RISH</span>
             <ArrowUpRight className="w-4 h-4" />
@@ -312,7 +427,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          {issues.slice(0, 5).map((iss) => (
+          {issues.slice(0, 6).map((iss) => (
             <div
               key={iss.id}
               onClick={() => onSelectIssue(iss)}
@@ -325,11 +440,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white">{iss.title}</div>
                   <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-2">
-                    <span>🏢 {iss.customerName}</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">🏢 {iss.customerName}</span>
+                    {iss.customerInn && <span className="font-mono text-[11px] text-hicyan font-bold">STIR: {iss.customerInn}</span>}
+                    {iss.regionName && <span className="text-[11px] text-emerald-600 dark:text-emerald-400">📍 {iss.regionName}</span>}
                     <span>•</span>
                     <span className="font-mono text-slate-700 dark:text-slate-300 font-medium">💻 {iss.productName} ({iss.moduleName})</span>
                     <span>•</span>
-                    <span>Mas'ul: {iss.assignedDevName || 'Biriktirilmagan'}</span>
+                    <span>Mas'ul: {iss.current_specialist_name || iss.assignedDevName || 'Biriktirilmagan'}</span>
                   </div>
                 </div>
               </div>

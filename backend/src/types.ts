@@ -49,16 +49,67 @@ export interface User {
   };
 }
 
+export interface CustomerProduct {
+  id: string;
+  productId: string;
+  productName: string;
+  moduleId?: string;
+  moduleName?: string;
+  version?: string;
+  startedAt?: string;
+  isActive: boolean;
+  notes?: string;
+}
+
+export interface CustomerContact {
+  id: string;
+  fullName: string;
+  phone: string;
+  position?: string;
+  isPrimary: boolean;
+  telegramChatId?: string;
+  telegramUsername?: string;
+  telegramLinkedAt?: string;
+  notificationConsent: boolean;
+  preferredLanguage: 'UZ' | 'RU';
+  isActive: boolean;
+}
+
 export interface Customer {
   id: string;
-  companyName: string;
-  contactPerson: string;
-  phone: string;
-  telegramUsername?: string;
-  address?: string;
+  inn: string;                     // STIR/INN (9 xonali)
+  companyName: string;             // Rasmiy tashkilot nomi
+  shortName?: string;
+  companyStatus: 'FAOL' | 'TUGATILGAN' | 'TOXTATILGAN';
+  legalAddress: string;            // Yuridik manzil (iHamkor/hujjat)
+  regionId: string;                // 14 ta hudud kodi
+  regionName: string;              // Viloyat nomi
+  districtId?: string;             // Tuman/shahar
+  districtName?: string;
+  activityAddress?: string;        // Amaldagi faoliyat manzili
+  primaryPhone: string;            // Asosiy telefon
+  secondaryPhone?: string;         // Qo‘shimcha telefon
+  contactPerson: string;           // Mas'ul shaxs (FIO)
+  position?: string;               // Lavozimi
+  preferredLanguage: 'UZ' | 'RU';  // Muloqot tili
+  responsibleOperatorId?: string;  // Biriktirilgan operator
+  responsibleOperatorName?: string;
+  telegramChatId?: string;         // Bog‘langan Telegram Chat ID
+  telegramUsername?: string;       // @username
+  telegramLinkedAt?: string;
+  telegramLinkToken?: string;      // Bir martalik token
+  telegramLinkExpiresAt?: string;
+  notificationConsent: boolean;    // Xabarlarga rozilik
+  dataSource: 'IHAMKOR' | 'MANUAL' | 'HYBRID';
+  sourceLastCheckedAt?: string;
+  isActive: boolean;
   notes?: string;
-  productIds: string[];
+  productIds: string[];            // ID ro‘yxati (backward compatibility)
+  products: CustomerProduct[];     // Dasturiy mahsulotlar to‘liq ro‘yxati
+  contacts?: CustomerContact[];    // Qo‘shimcha aloqa shaxslari
   createdAt: string;
+  updatedAt: string;
+  issuesCount?: number;            // Jami murojaatlar
 }
 
 export interface ProductModule {
@@ -73,14 +124,21 @@ export interface Product {
   code: string;
   description: string;
   modules: ProductModule[];
+  isActive?: boolean;
 }
 
 export interface Attachment {
   id: string;
+  issueId?: string;
   name: string;
+  originalName: string;
+  mimeType: string;
   size: number;
-  type: string;
+  sizeFormatted: string;
+  fileCategory: 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'ARCHIVE' | 'OTHER';
+  storagePath: string;
   url: string;
+  dataUrl?: string; // base64 preview for images if small
   uploadedAt: string;
   uploadedBy: string;
 }
@@ -125,7 +183,13 @@ export interface Issue {
   description: string;
   customerId: string;
   customerName: string;
+  customerInn?: string;
   customerPhone?: string;
+  contactPhoneSnapshot?: string;     // Murojaat paytidagi telefon
+  contactPersonSnapshot?: string;    // Murojaat paytidagi aloqa shaxsi
+  regionId?: string;                 // Murojaat paytidagi viloyat kodi
+  regionName?: string;               // Murojaat paytidagi viloyat nomi
+  districtName?: string;
   productId: string;
   productName: string;
   moduleId: string;
@@ -195,6 +259,20 @@ export interface ReminderLog {
   status: 'SENT' | 'SIMULATED' | 'FAILED';
 }
 
+export interface CustomerNotificationLog {
+  id: string;
+  customerId: string;
+  customerName: string;
+  issueId?: string;
+  issueCode?: string;
+  telegramChatId: string;
+  notificationType: 'ISSUE_CREATED' | 'ASSIGNED' | 'SOLUTION_READY' | 'ISSUE_CLOSED' | 'LINK_CONFIRMED' | 'TEST';
+  message: string;
+  deliveryStatus: 'SENT' | 'FAILED' | 'SIMULATED';
+  sentAt: string;
+  errorMessage?: string;
+}
+
 export interface TelegramRecipient {
   id: string;
   name: string;
@@ -222,6 +300,57 @@ export interface DashboardStats {
     stage3: number;
     stage4: number;
   };
+  // New Customer & Regional Stats
+  totalCustomers: number;
+  activeCustomers: number;
+  telegramLinkedCustomers: number;
+  todayIssues: number;
+  topRegions: {
+    regionId: string;
+    regionName: string;
+    count: number;
+  }[];
+  productDistribution: {
+    productId: string;
+    productName: string;
+    count: number;
+  }[];
+  telegramStats: {
+    linkedCount: number;
+    unlinkedCount: number;
+    totalNotificationsSent: number;
+    totalNotificationsFailed: number;
+  };
+}
+
+export interface RegionReportItem {
+  regionId: string;
+  regionName: string;
+  totalIssues: number;
+  closedIssues: number;
+  openIssues: number;
+  reopenedIssues: number;
+  sharePercentage: number;
+  customerCount: number;
+}
+
+export interface ProductReportItem {
+  productId: string;
+  productName: string;
+  code: string;
+  totalIssues: number;
+  closedIssues: number;
+  openIssues: number;
+  reopenedIssues: number;
+  sharePercentage: number;
+  activeCustomerCount: number;
+}
+
+export interface RegionProductMatrixRow {
+  regionId: string;
+  regionName: string;
+  products: Record<string, number>;
+  total: number;
 }
 
 export interface SpecialistKPI {
